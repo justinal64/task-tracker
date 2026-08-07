@@ -40,7 +40,16 @@ export interface Task {
   createdBy: string;
 }
 
-export type ActivityType = "completion" | "adjustment";
+export interface Reward {
+  title: string;
+  description: string | null;
+  cost: number;
+  active: boolean;
+  createdAt: number;
+  createdBy: string;
+}
+
+export type ActivityType = "completion" | "adjustment" | "redemption";
 
 export interface ActivityEntry {
   type: ActivityType;
@@ -48,8 +57,12 @@ export interface ActivityEntry {
   points: number;
   taskId: string | null;
   taskTitle: string | null;
+  rewardId: string | null;
+  rewardTitle: string | null;
   dateKey: string | null;
   reason: string | null;
+  /** Only meaningful for type: 'redemption' -- has a parent seen this yet? */
+  acknowledged: boolean | null;
   createdAt: number;
   createdBy: string;
 }

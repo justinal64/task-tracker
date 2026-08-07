@@ -47,9 +47,16 @@ service cloud.firestore {
         allow write: if isParentOfFamily(familyId);  // create/update/delete: parent only
       }
 
+      match /rewards/{rewardId} {
+        allow read: if isMemberOfFamily(familyId);   // kids see the catalog, read-only
+        allow write: if isParentOfFamily(familyId);  // create/update/delete: parent only
+      }
+
       match /activity/{entryId} {
         allow read: if isParentOfFamily(familyId) || request.auth.uid == resource.data.childId;
-        allow write: if false; // always via the transaction-based API routes, never direct
+        // always via the transaction-based /api/tasks/.../complete, /api/rewards/.../redeem,
+        // and /api/family/.../adjust-points routes, or the acknowledge route -- never direct
+        allow write: if false;
       }
     }
   }

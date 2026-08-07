@@ -63,8 +63,11 @@ export async function POST(
         points: task.points,
         taskId,
         taskTitle: task.title,
+        rewardId: null,
+        rewardTitle: null,
         dateKey: task.recurrence === "daily" ? dateKey() : null,
         reason: null,
+        acknowledged: null,
         createdAt: Date.now(),
         createdBy: user.uid,
       });

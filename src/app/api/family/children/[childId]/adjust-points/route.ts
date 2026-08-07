@@ -32,8 +32,11 @@ export async function POST(
       points: pointsNum,
       taskId: null,
       taskTitle: null,
+      rewardId: null,
+      rewardTitle: null,
       dateKey: null,
       reason: typeof reason === "string" && reason.trim() ? reason.trim() : null,
+      acknowledged: null,
       createdAt: Date.now(),
       createdBy: user.uid,
     });
