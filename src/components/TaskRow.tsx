@@ -17,20 +17,6 @@ export default function TaskRow({
   const router = useRouter();
   const [busy, setBusy] = useState(false);
 
-  async function toggleActive() {
-    setBusy(true);
-    try {
-      await fetch(`/api/family/tasks/${taskId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ active: !task.active }),
-      });
-      router.refresh();
-    } finally {
-      setBusy(false);
-    }
-  }
-
   async function handleDelete() {
     if (!confirm(`Delete "${task.title}"?`)) return;
     setBusy(true);
@@ -57,13 +43,6 @@ export default function TaskRow({
         <Link href={`/parent/tasks/${taskId}`} className="text-sm text-accent hover:text-accent-hover">
           Edit
         </Link>
-        <button
-          onClick={toggleActive}
-          disabled={busy}
-          className="text-sm text-muted hover:text-foreground disabled:opacity-60"
-        >
-          {task.active ? "Pause" : "Resume"}
-        </button>
         <button
           onClick={handleDelete}
           disabled={busy}
