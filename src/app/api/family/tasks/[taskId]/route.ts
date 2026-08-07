@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/firebase-admin";
 import { requireParentSession } from "@/lib/session";
-import type { Recurrence } from "@/lib/types";
+import { parseWeekdays } from "@/lib/recurrence";
+import type { Recurrence, Task } from "@/lib/types";
 
-const RECURRENCES: Recurrence[] = ["once", "daily"];
+const RECURRENCES: Recurrence[] = ["once", "daily", "weekly"];
 
 export async function PATCH(
   req: NextRequest,
@@ -13,6 +14,11 @@ export async function PATCH(
     const user = await requireParentSession();
     if (!user) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
     const { taskId } = await params;
+    const taskRef = db
+      .collection("families")
+      .doc(user.familyId)
+      .collection("tasks")
+      .doc(taskId);
 
     const body = await req.json();
     const updates: Record<string, unknown> = {};
@@ -46,18 +52,26 @@ export async function PATCH(
       updates.assignedTo = body.assignedTo;
     }
     if (RECURRENCES.includes(body.recurrence)) updates.recurrence = body.recurrence;
+
+    if (updates.recurrence !== undefined || body.weekdays !== undefined) {
+      const effectiveRecurrence =
+        (updates.recurrence as string | undefined) ??
+        ((await taskRef.get()).data() as Task | undefined)?.recurrence ??
+        "once";
+      const weekdaysResult = parseWeekdays(effectiveRecurrence, body.weekdays);
+      if (!weekdaysResult.ok) {
+        return NextResponse.json({ error: weekdaysResult.error }, { status: 400 });
+      }
+      updates.weekdays = weekdaysResult.value;
+    }
+
     if (typeof body.active === "boolean") updates.active = body.active;
 
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
     }
 
-    await db
-      .collection("families")
-      .doc(user.familyId)
-      .collection("tasks")
-      .doc(taskId)
-      .update(updates);
+    await taskRef.update(updates);
 
     return NextResponse.json({ ok: true });
   } catch (err) {

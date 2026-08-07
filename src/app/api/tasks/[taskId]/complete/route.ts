@@ -3,6 +3,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { db } from "@/lib/firebase-admin";
 import { getSessionUser } from "@/lib/session";
 import { dateKey } from "@/lib/pin";
+import { isScheduledToday } from "@/lib/recurrence";
 import type { Child, Task } from "@/lib/types";
 
 class HttpError extends Error {
@@ -48,6 +49,9 @@ export async function POST(
       if (task.assignedTo !== "any" && task.assignedTo !== childId) {
         throw new HttpError(403, "This task isn't assigned to this child.");
       }
+      if (!isScheduledToday(task)) {
+        throw new HttpError(409, "This task isn't scheduled for today.");
+      }
 
       const activityId =
         task.recurrence === "once" ? taskId : `${taskId}__${childId}__${dateKey()}`;
@@ -67,7 +71,7 @@ export async function POST(
         taskTitle: task.title,
         rewardId: null,
         rewardTitle: null,
-        dateKey: task.recurrence === "daily" ? dateKey() : null,
+        dateKey: task.recurrence !== "once" ? dateKey() : null,
         reason: null,
         acknowledged: null,
         voided: false,

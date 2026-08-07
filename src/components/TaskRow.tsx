@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { recurrenceLabel } from "@/lib/recurrence";
 import type { Task } from "@/lib/types";
 
 export default function TaskRow({
@@ -36,7 +37,7 @@ export default function TaskRow({
         </p>
         <p className="text-sm text-muted">
           {assigneeLabel && `${assigneeLabel} · `}
-          {task.points} pts · {task.recurrence === "daily" ? "Daily" : "One-off"}
+          {task.points} pts · {recurrenceLabel(task)}
         </p>
       </div>
       <div className="flex items-center gap-3">

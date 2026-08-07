@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { WEEKDAY_LABELS } from "@/lib/recurrence";
+import type { Recurrence } from "@/lib/types";
 
 interface ChildOption {
   id: string;
@@ -16,9 +18,14 @@ export default function TaskForm({ kids }: { kids: ChildOption[] }) {
   const [description, setDescription] = useState("");
   const [points, setPoints] = useState("5");
   const [assignedTo, setAssignedTo] = useState("any");
-  const [recurrence, setRecurrence] = useState<"once" | "daily">("once");
+  const [recurrence, setRecurrence] = useState<Recurrence>("once");
+  const [weekdays, setWeekdays] = useState<number[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  function toggleWeekday(day: number) {
+    setWeekdays((prev) => (prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]));
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -34,6 +41,7 @@ export default function TaskForm({ kids }: { kids: ChildOption[] }) {
           points: Number(points),
           assignedTo,
           recurrence,
+          weekdays,
         }),
       });
       const data = await res.json();
@@ -44,6 +52,7 @@ export default function TaskForm({ kids }: { kids: ChildOption[] }) {
       setPoints("5");
       setAssignedTo("any");
       setRecurrence("once");
+      setWeekdays([]);
       setOpen(false);
       router.refresh();
     } catch (err) {
@@ -109,13 +118,30 @@ export default function TaskForm({ kids }: { kids: ChildOption[] }) {
         </select>
         <select
           value={recurrence}
-          onChange={(e) => setRecurrence(e.target.value as "once" | "daily")}
+          onChange={(e) => setRecurrence(e.target.value as Recurrence)}
           className="rounded-lg border border-hairline bg-background px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-accent"
         >
           <option value="once">One-off</option>
           <option value="daily">Daily</option>
+          <option value="weekly">Specific days</option>
         </select>
       </div>
+      {recurrence === "weekly" && (
+        <div className="flex flex-wrap gap-2">
+          {WEEKDAY_LABELS.map((label, day) => (
+            <button
+              key={day}
+              type="button"
+              onClick={() => toggleWeekday(day)}
+              className={`rounded-lg border px-3 py-1.5 text-sm ${
+                weekdays.includes(day) ? "border-accent bg-accent/10 text-accent" : "border-hairline"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
       {error && <p className="text-sm text-danger">{error}</p>}
       <div className="flex gap-2">
         <button

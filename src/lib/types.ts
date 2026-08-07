@@ -26,7 +26,7 @@ export interface ChildCredentials {
   updatedAt: number;
 }
 
-export type Recurrence = "once" | "daily";
+export type Recurrence = "once" | "daily" | "weekly";
 export type AssignedTo = "any" | string;
 
 export interface Task {
@@ -35,6 +35,8 @@ export interface Task {
   points: number;
   assignedTo: AssignedTo;
   recurrence: Recurrence;
+  /** Only set (and non-empty) when recurrence === 'weekly'. 0 = Sunday .. 6 = Saturday. */
+  weekdays: number[] | null;
   active: boolean;
   createdAt: number;
   createdBy: string;

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase-client";
 import TaskCard from "@/components/TaskCard";
+import { isScheduledToday } from "@/lib/recurrence";
 import type { Task } from "@/lib/types";
 
 interface TaskWithId extends Task {
@@ -29,7 +30,8 @@ export default function TaskBoard({
     const unsub = onSnapshot(q, (snap) => {
       const next = snap.docs
         .map((d) => ({ id: d.id, ...(d.data() as Task) }))
-        .filter((t) => t.assignedTo === "any" || t.assignedTo === childId);
+        .filter((t) => t.assignedTo === "any" || t.assignedTo === childId)
+        .filter(isScheduledToday);
       setTasks(next);
     });
     return unsub;
@@ -49,6 +51,7 @@ export default function TaskBoard({
           description={task.description}
           points={task.points}
           recurrence={task.recurrence}
+          weekdays={task.weekdays}
           completed={completedToday.has(task.id)}
           onCompleted={() =>
             setCompletedToday((prev) => {

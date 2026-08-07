@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { weekdaysLabel } from "@/lib/recurrence";
 import type { Recurrence } from "@/lib/types";
 
 export default function TaskCard({
@@ -9,6 +10,7 @@ export default function TaskCard({
   description,
   points,
   recurrence,
+  weekdays,
   completed,
   onCompleted,
 }: {
@@ -17,6 +19,7 @@ export default function TaskCard({
   description: string | null;
   points: number;
   recurrence: Recurrence;
+  weekdays: number[] | null;
   completed: boolean;
   onCompleted: () => void;
 }) {
@@ -49,7 +52,9 @@ export default function TaskCard({
           <p className="font-medium">{title}</p>
           {description && <p className="text-sm text-muted">{description}</p>}
           <p className="text-sm font-semibold text-accent">
-            {points} pts{recurrence === "daily" ? " · daily" : ""}
+            {points} pts
+            {recurrence === "daily" && " · daily"}
+            {recurrence === "weekly" && weekdays && ` · ${weekdaysLabel(weekdays)}`}
           </p>
         </div>
         {completed ? (

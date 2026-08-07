@@ -1,16 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/firebase-admin";
 import { requireParentSession } from "@/lib/session";
+import { parseWeekdays } from "@/lib/recurrence";
 import type { Recurrence } from "@/lib/types";
 
-const RECURRENCES: Recurrence[] = ["once", "daily"];
+const RECURRENCES: Recurrence[] = ["once", "daily", "weekly"];
 
 export async function POST(req: NextRequest) {
   try {
     const user = await requireParentSession();
     if (!user) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
 
-    const { title, description, points, assignedTo, recurrence } = await req.json();
+    const { title, description, points, assignedTo, recurrence, weekdays } = await req.json();
 
     if (!title || typeof title !== "string" || !title.trim()) {
       return NextResponse.json({ error: "Title is required." }, { status: 400 });
@@ -24,6 +25,10 @@ export async function POST(req: NextRequest) {
     }
     if (!RECURRENCES.includes(recurrence)) {
       return NextResponse.json({ error: "Invalid recurrence." }, { status: 400 });
+    }
+    const weekdaysResult = parseWeekdays(recurrence, weekdays);
+    if (!weekdaysResult.ok) {
+      return NextResponse.json({ error: weekdaysResult.error }, { status: 400 });
     }
 
     // 'assignedTo' is either the literal 'any' or a child uid within this family;
@@ -50,6 +55,7 @@ export async function POST(req: NextRequest) {
         points: pointsNum,
         assignedTo,
         recurrence,
+        weekdays: weekdaysResult.value,
         active: true,
         createdAt: Date.now(),
         createdBy: user.uid,
