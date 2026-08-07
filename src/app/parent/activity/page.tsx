@@ -46,6 +46,8 @@ export default async function ActivityPage({
       points: entry.points,
       label,
       createdAt: entry.createdAt,
+      type: entry.type,
+      voided: entry.voided,
     };
   });
 

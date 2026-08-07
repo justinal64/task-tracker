@@ -37,6 +37,7 @@ export async function POST(
       dateKey: null,
       reason: typeof reason === "string" && reason.trim() ? reason.trim() : null,
       acknowledged: null,
+      voided: false,
       createdAt: Date.now(),
       createdBy: user.uid,
     });

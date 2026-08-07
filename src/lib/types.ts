@@ -63,6 +63,8 @@ export interface ActivityEntry {
   reason: string | null;
   /** Only meaningful for type: 'redemption' -- has a parent seen this yet? */
   acknowledged: boolean | null;
+  /** Only meaningful for type: 'completion' | 'redemption' -- has a parent reversed this? */
+  voided: boolean;
   createdAt: number;
   createdBy: string;
 }

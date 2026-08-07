@@ -53,7 +53,9 @@ export async function POST(
         task.recurrence === "once" ? taskId : `${taskId}__${childId}__${dateKey()}`;
       const activityRef = familyRef.collection("activity").doc(activityId);
       const activitySnap = await tx.get(activityRef);
-      if (activitySnap.exists) {
+      // A voided completion frees the slot back up -- undoing a mistaken
+      // "done" should let the kid actually do (and log) it again.
+      if (activitySnap.exists && !activitySnap.data()?.voided) {
         throw new HttpError(409, "Already completed.");
       }
 
@@ -68,6 +70,7 @@ export async function POST(
         dateKey: task.recurrence === "daily" ? dateKey() : null,
         reason: null,
         acknowledged: null,
+        voided: false,
         createdAt: Date.now(),
         createdBy: user.uid,
       });

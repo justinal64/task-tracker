@@ -38,7 +38,10 @@ export async function POST(
 
       if (!rewardSnap.exists) throw new HttpError(404, "Reward not found.");
       if (!childSnap.exists) throw new HttpError(404, "Child not found.");
-      if (activitySnap.exists) throw new HttpError(409, "Already redeemed.");
+      // A voided redemption frees the slot back up, same as a voided completion.
+      if (activitySnap.exists && !activitySnap.data()?.voided) {
+        throw new HttpError(409, "Already redeemed.");
+      }
 
       const reward = rewardSnap.data() as Reward;
       const child = childSnap.data() as Child;
@@ -59,6 +62,7 @@ export async function POST(
         dateKey: null,
         reason: null,
         acknowledged: false,
+        voided: false,
         createdAt: Date.now(),
         createdBy: user.uid,
       });
