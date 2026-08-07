@@ -27,6 +27,9 @@ export default function ParentNav({ displayName }: { displayName: string }) {
         <Link href="/parent/tasks" className="text-sm text-muted hover:text-foreground">
           Tasks
         </Link>
+        <Link href="/parent/rewards" className="text-sm text-muted hover:text-foreground">
+          Rewards
+        </Link>
         <Link href="/parent/activity" className="text-sm text-muted hover:text-foreground">
           Activity
         </Link>

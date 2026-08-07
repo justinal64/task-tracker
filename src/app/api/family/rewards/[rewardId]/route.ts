@@ -1,0 +1,72 @@
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/lib/firebase-admin";
+import { requireParentSession } from "@/lib/session";
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ rewardId: string }> }
+) {
+  try {
+    const user = await requireParentSession();
+    if (!user) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+    const { rewardId } = await params;
+
+    const body = await req.json();
+    const updates: Record<string, unknown> = {};
+
+    if (typeof body.title === "string" && body.title.trim()) updates.title = body.title.trim();
+    if ("description" in body) {
+      updates.description =
+        typeof body.description === "string" && body.description.trim()
+          ? body.description.trim()
+          : null;
+    }
+    if (body.cost !== undefined) {
+      const costNum = Number(body.cost);
+      if (!Number.isInteger(costNum) || costNum <= 0) {
+        return NextResponse.json({ error: "Cost must be a positive whole number." }, { status: 400 });
+      }
+      updates.cost = costNum;
+    }
+    if (typeof body.active === "boolean") updates.active = body.active;
+
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
+    }
+
+    await db
+      .collection("families")
+      .doc(user.familyId)
+      .collection("rewards")
+      .doc(rewardId)
+      .update(updates);
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("[family/rewards:PATCH]", err);
+    return NextResponse.json({ error: "Server error. Please try again." }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ rewardId: string }> }
+) {
+  try {
+    const user = await requireParentSession();
+    if (!user) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+    const { rewardId } = await params;
+
+    await db
+      .collection("families")
+      .doc(user.familyId)
+      .collection("rewards")
+      .doc(rewardId)
+      .delete();
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("[family/rewards:DELETE]", err);
+    return NextResponse.json({ error: "Server error. Please try again." }, { status: 500 });
+  }
+}
