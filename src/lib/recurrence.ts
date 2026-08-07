@@ -1,5 +1,13 @@
 export const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+/** Hour (24h, local time) after which an undone recurring task is flagged. */
+export const REMINDER_HOUR = 18;
+
+/** A recurring (not one-off) task that's still undone once it's evening. */
+export function isOverdue(task: { recurrence: string }, completed: boolean): boolean {
+  return task.recurrence !== "once" && !completed && new Date().getHours() >= REMINDER_HOUR;
+}
+
 /** True unless the task is a 'weekly' task not scheduled for today. */
 export function isScheduledToday(task: { recurrence: string; weekdays: number[] | null }): boolean {
   if (task.recurrence !== "weekly") return true;

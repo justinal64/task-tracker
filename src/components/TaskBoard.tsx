@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase-client";
 import TaskCard from "@/components/TaskCard";
-import { isScheduledToday } from "@/lib/recurrence";
+import { isOverdue, isScheduledToday } from "@/lib/recurrence";
 import type { Task } from "@/lib/types";
 
 interface TaskWithId extends Task {
@@ -57,6 +57,7 @@ export default function TaskBoard({
           weekdays={task.weekdays}
           completed={completedToday.has(task.id)}
           streak={streaks[task.id] ?? 0}
+          overdue={isOverdue(task, completedToday.has(task.id))}
           onCompleted={() => {
             setCompletedToday((prev) => {
               const next = new Set(prev);

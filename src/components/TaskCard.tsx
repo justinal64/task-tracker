@@ -15,6 +15,7 @@ export default function TaskCard({
   weekdays,
   completed,
   streak,
+  overdue,
   onCompleted,
 }: {
   taskId: string;
@@ -25,6 +26,7 @@ export default function TaskCard({
   weekdays: number[] | null;
   completed: boolean;
   streak: number;
+  overdue: boolean;
   onCompleted: () => void;
 }) {
   const [loading, setLoading] = useState(false);
@@ -50,7 +52,11 @@ export default function TaskCard({
   return (
     <div
       className={`flex flex-col gap-2 rounded-xl border p-4 ${
-        completed ? "border-hairline bg-background opacity-60" : "border-hairline bg-surface"
+        completed
+          ? "border-hairline bg-background opacity-60"
+          : overdue
+            ? "border-danger bg-surface"
+            : "border-hairline bg-surface"
       }`}
     >
       <div className="flex items-center justify-between gap-4">
@@ -60,6 +66,11 @@ export default function TaskCard({
             {streak > 0 && (
               <span className="ml-2 text-sm font-semibold text-accent">
                 🔥 {streak}
+              </span>
+            )}
+            {overdue && (
+              <span className="ml-2 text-sm font-semibold text-danger">
+                ⏰ Not done yet
               </span>
             )}
           </p>
