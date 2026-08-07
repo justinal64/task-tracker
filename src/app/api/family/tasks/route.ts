@@ -31,18 +31,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: weekdaysResult.error }, { status: 400 });
     }
 
-    // 'assignedTo' is either the literal 'any' or a child uid within this family;
-    // verify child ids to prevent assigning a task to a uid outside the family.
-    if (assignedTo !== "any") {
-      const childSnap = await db
-        .collection("families")
-        .doc(user.familyId)
-        .collection("children")
-        .doc(assignedTo)
-        .get();
-      if (!childSnap.exists) {
-        return NextResponse.json({ error: "Unknown child." }, { status: 400 });
-      }
+    // Every task must be assigned to a specific child within this family.
+    const childSnap = await db
+      .collection("families")
+      .doc(user.familyId)
+      .collection("children")
+      .doc(assignedTo)
+      .get();
+    if (!childSnap.exists) {
+      return NextResponse.json({ error: "Unknown child." }, { status: 400 });
     }
 
     const ref = await db

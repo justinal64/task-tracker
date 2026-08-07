@@ -110,9 +110,9 @@ export default function TaskEditForm({
         <select
           value={assignedTo}
           onChange={(e) => setAssignedTo(e.target.value)}
+          required
           className="flex-1 rounded-lg border border-hairline bg-background px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-accent"
         >
-          <option value="any">Any kid</option>
           {kids.map((child) => (
             <option key={child.id} value={child.id}>
               {child.avatarEmoji} {child.name}

@@ -38,16 +38,14 @@ export async function PATCH(
       updates.points = pointsNum;
     }
     if (typeof body.assignedTo === "string" && body.assignedTo) {
-      if (body.assignedTo !== "any") {
-        const childSnap = await db
-          .collection("families")
-          .doc(user.familyId)
-          .collection("children")
-          .doc(body.assignedTo)
-          .get();
-        if (!childSnap.exists) {
-          return NextResponse.json({ error: "Unknown child." }, { status: 400 });
-        }
+      const childSnap = await db
+        .collection("families")
+        .doc(user.familyId)
+        .collection("children")
+        .doc(body.assignedTo)
+        .get();
+      if (!childSnap.exists) {
+        return NextResponse.json({ error: "Unknown child." }, { status: 400 });
       }
       updates.assignedTo = body.assignedTo;
     }

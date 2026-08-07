@@ -17,7 +17,7 @@ export default function TaskForm({ kids }: { kids: ChildOption[] }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [points, setPoints] = useState("5");
-  const [assignedTo, setAssignedTo] = useState("any");
+  const [assignedTo, setAssignedTo] = useState(kids[0]?.id ?? "");
   const [recurrence, setRecurrence] = useState<Recurrence>("once");
   const [weekdays, setWeekdays] = useState<number[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -50,7 +50,7 @@ export default function TaskForm({ kids }: { kids: ChildOption[] }) {
       setTitle("");
       setDescription("");
       setPoints("5");
-      setAssignedTo("any");
+      setAssignedTo(kids[0]?.id ?? "");
       setRecurrence("once");
       setWeekdays([]);
       setOpen(false);
@@ -107,9 +107,10 @@ export default function TaskForm({ kids }: { kids: ChildOption[] }) {
         <select
           value={assignedTo}
           onChange={(e) => setAssignedTo(e.target.value)}
+          required
           className="flex-1 rounded-lg border border-hairline bg-background px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-accent"
         >
-          <option value="any">Any kid</option>
+          {kids.length === 0 && <option value="">Add a kid first</option>}
           {kids.map((child) => (
             <option key={child.id} value={child.id}>
               {child.avatarEmoji} {child.name}
@@ -146,7 +147,7 @@ export default function TaskForm({ kids }: { kids: ChildOption[] }) {
       <div className="flex gap-2">
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || kids.length === 0}
           className="rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white hover:bg-accent-hover disabled:opacity-60"
         >
           {loading ? "Adding…" : "Add task"}
