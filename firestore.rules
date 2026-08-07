@@ -1,0 +1,56 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isParentOfFamily(familyId) {
+      return isSignedIn() && userDoc().role == 'parent' && userDoc().familyId == familyId;
+    }
+
+    function isMemberOfFamily(familyId) {
+      return isSignedIn() && userDoc().familyId == familyId;
+    }
+
+    match /users/{uid} {
+      allow read: if isSignedIn() && request.auth.uid == uid;
+      allow write: if false; // admin SDK only, set up at account-creation time
+    }
+
+    match /families/{familyId} {
+      allow read: if isMemberOfFamily(familyId);
+      allow write: if isParentOfFamily(familyId);
+
+      match /children/{childId} {
+        // childId IS the child's own auth uid, so a direct uid match is sufficient proof of identity
+        allow read: if isParentOfFamily(familyId) || request.auth.uid == childId;
+        allow create, delete: if isParentOfFamily(familyId);
+        // parent may edit name/avatar directly from the client SDK, but pointsBalance
+        // may NEVER be touched by any client write -- only by the admin-SDK transaction
+        // in /api/tasks/[taskId]/complete and /api/family/children/[childId]/adjust-points
+        allow update: if isParentOfFamily(familyId)
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['pointsBalance']);
+
+        match /private/{document=**} {
+          allow read, write: if false; // PIN hash: admin SDK only, no client ever touches this
+        }
+      }
+
+      match /tasks/{taskId} {
+        allow read: if isMemberOfFamily(familyId);   // kids see the board, read-only
+        allow write: if isParentOfFamily(familyId);  // create/update/delete: parent only
+      }
+
+      match /activity/{entryId} {
+        allow read: if isParentOfFamily(familyId) || request.auth.uid == resource.data.childId;
+        allow write: if false; // always via the transaction-based API routes, never direct
+      }
+    }
+  }
+}
