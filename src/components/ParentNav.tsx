@@ -33,6 +33,9 @@ export default function ParentNav({ displayName }: { displayName: string }) {
         <Link href="/parent/activity" className="text-sm text-muted hover:text-foreground">
           Activity
         </Link>
+        <Link href="/parent/settings" className="text-sm text-muted hover:text-foreground">
+          Settings
+        </Link>
       </div>
       <div className="flex items-center gap-4">
         <span className="text-sm text-muted">{displayName}</span>
