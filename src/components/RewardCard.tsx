@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { fireConfetti } from "@/lib/confetti";
+import { playSuccessChime } from "@/lib/sound";
 
 export default function RewardCard({
   rewardId,
@@ -22,14 +24,17 @@ export default function RewardCard({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleRedeem() {
+  async function handleRedeem(e: React.MouseEvent<HTMLButtonElement>) {
     if (redeemed || !affordable || loading) return;
+    const { clientX, clientY } = e;
     setLoading(true);
     setError(null);
     try {
       const res = await fetch(`/api/rewards/${rewardId}/redeem`, { method: "POST" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Could not redeem.");
+      fireConfetti(clientX, clientY);
+      playSuccessChime();
       onRedeemed();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not redeem.");

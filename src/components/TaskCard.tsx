@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { weekdaysLabel } from "@/lib/recurrence";
+import { fireConfetti } from "@/lib/confetti";
+import { playSuccessChime } from "@/lib/sound";
 import type { Recurrence } from "@/lib/types";
 
 export default function TaskCard({
@@ -28,13 +30,15 @@ export default function TaskCard({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleComplete() {
+  async function handleComplete(e: React.MouseEvent<HTMLButtonElement>) {
     setLoading(true);
     setError(null);
     try {
       const res = await fetch(`/api/tasks/${taskId}/complete`, { method: "POST" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Could not mark done.");
+      fireConfetti(e.clientX, e.clientY);
+      playSuccessChime();
       onCompleted();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not mark done.");
