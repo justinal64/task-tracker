@@ -16,14 +16,17 @@ export default function TaskBoard({
   childId,
   initialTasks,
   initialCompletedTodayIds,
+  initialStreaks,
 }: {
   familyId: string;
   childId: string;
   initialTasks: TaskWithId[];
   initialCompletedTodayIds: string[];
+  initialStreaks: Record<string, number>;
 }) {
   const [tasks, setTasks] = useState(initialTasks);
   const [completedToday, setCompletedToday] = useState(new Set(initialCompletedTodayIds));
+  const [streaks, setStreaks] = useState(initialStreaks);
 
   useEffect(() => {
     const q = query(collection(db, "families", familyId, "tasks"), where("active", "==", true));
@@ -53,13 +56,19 @@ export default function TaskBoard({
           recurrence={task.recurrence}
           weekdays={task.weekdays}
           completed={completedToday.has(task.id)}
-          onCompleted={() =>
+          streak={streaks[task.id] ?? 0}
+          onCompleted={() => {
             setCompletedToday((prev) => {
               const next = new Set(prev);
               next.add(task.id);
               return next;
-            })
-          }
+            });
+            if (task.recurrence === "daily") {
+              // Optimistic bump -- the exact server value (which also
+              // accounts for streak resets) lands on the next full load.
+              setStreaks((prev) => ({ ...prev, [task.id]: (prev[task.id] ?? 0) + 1 }));
+            }
+          }}
         />
       ))}
     </div>

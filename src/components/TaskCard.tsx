@@ -12,6 +12,7 @@ export default function TaskCard({
   recurrence,
   weekdays,
   completed,
+  streak,
   onCompleted,
 }: {
   taskId: string;
@@ -21,6 +22,7 @@ export default function TaskCard({
   recurrence: Recurrence;
   weekdays: number[] | null;
   completed: boolean;
+  streak: number;
   onCompleted: () => void;
 }) {
   const [loading, setLoading] = useState(false);
@@ -49,7 +51,14 @@ export default function TaskCard({
     >
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="font-medium">{title}</p>
+          <p className="font-medium">
+            {title}
+            {streak > 0 && (
+              <span className="ml-2 text-sm font-semibold text-accent">
+                🔥 {streak}
+              </span>
+            )}
+          </p>
           {description && <p className="text-sm text-muted">{description}</p>}
           <p className="text-sm font-semibold text-accent">
             {points} pts

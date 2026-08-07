@@ -4,13 +4,17 @@ import { db } from "@/lib/firebase-admin";
 import { getSessionUser } from "@/lib/session";
 import { dateKey } from "@/lib/pin";
 import { isScheduledToday } from "@/lib/recurrence";
-import type { Child, Task } from "@/lib/types";
+import type { Child, Streak, Task } from "@/lib/types";
 
 class HttpError extends Error {
   constructor(public status: number, message: string) {
     super(message);
   }
 }
+
+const STREAK_MILESTONE = 7;
+const STREAK_BONUS_POINTS = 5;
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
 export async function POST(
   req: NextRequest,
@@ -35,6 +39,7 @@ export async function POST(
     const familyRef = db.collection("families").doc(user.familyId);
     const taskRef = familyRef.collection("tasks").doc(taskId);
     const childRef = familyRef.collection("children").doc(childId);
+    const streakRef = childRef.collection("streaks").doc(taskId);
 
     const newBalance = await db.runTransaction(async (tx) => {
       const [taskSnap, childSnap] = await Promise.all([tx.get(taskRef), tx.get(childRef)]);
@@ -63,6 +68,8 @@ export async function POST(
         throw new HttpError(409, "Already completed.");
       }
 
+      const streakSnap = task.recurrence === "daily" ? await tx.get(streakRef) : null;
+
       tx.set(activityRef, {
         type: "completion",
         childId,
@@ -78,12 +85,47 @@ export async function POST(
         createdAt: Date.now(),
         createdBy: user.uid,
       });
-      tx.update(childRef, { pointsBalance: FieldValue.increment(task.points) });
       if (task.recurrence === "once") {
         tx.update(taskRef, { active: false });
       }
 
-      return child.pointsBalance + task.points;
+      // Firestore only keeps the LAST update() call per document within a
+      // transaction (they don't merge), so pointsBalance is written exactly
+      // once below with the full total, task points plus any streak bonus.
+      let bonusPoints = 0;
+      if (task.recurrence === "daily") {
+        const today = dateKey();
+        const yesterday = dateKey(new Date(Date.now() - ONE_DAY_MS));
+        const prevStreak = streakSnap?.exists ? (streakSnap.data() as Streak) : null;
+        const currentStreak =
+          prevStreak?.lastCompletedDateKey === yesterday ? prevStreak.currentStreak + 1 : 1;
+        const longestStreak = Math.max(prevStreak?.longestStreak ?? 0, currentStreak);
+
+        tx.set(streakRef, { currentStreak, longestStreak, lastCompletedDateKey: today });
+
+        if (currentStreak % STREAK_MILESTONE === 0) {
+          bonusPoints = STREAK_BONUS_POINTS;
+          tx.set(familyRef.collection("activity").doc(), {
+            type: "adjustment",
+            childId,
+            points: bonusPoints,
+            taskId: null,
+            taskTitle: null,
+            rewardId: null,
+            rewardTitle: null,
+            dateKey: null,
+            reason: `${currentStreak}-day streak bonus! 🔥`,
+            acknowledged: null,
+            voided: false,
+            createdAt: Date.now(),
+            createdBy: user.uid,
+          });
+        }
+      }
+
+      tx.update(childRef, { pointsBalance: FieldValue.increment(task.points + bonusPoints) });
+
+      return child.pointsBalance + task.points + bonusPoints;
     });
 
     return NextResponse.json({ pointsBalance: newBalance });

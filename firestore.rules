@@ -40,6 +40,11 @@ service cloud.firestore {
         match /private/{document=**} {
           allow read, write: if false; // PIN hash: admin SDK only, no client ever touches this
         }
+
+        match /streaks/{taskId} {
+          allow read: if isParentOfFamily(familyId) || request.auth.uid == childId;
+          allow write: if false; // only updated inside the completion transaction
+        }
       }
 
       match /tasks/{taskId} {

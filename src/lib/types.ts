@@ -42,6 +42,12 @@ export interface Task {
   createdBy: string;
 }
 
+export interface Streak {
+  currentStreak: number;
+  longestStreak: number;
+  lastCompletedDateKey: string;
+}
+
 export interface Reward {
   title: string;
   description: string | null;

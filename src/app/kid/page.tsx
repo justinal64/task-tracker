@@ -2,7 +2,7 @@ import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/firebase-admin";
 import { dateKey } from "@/lib/pin";
 import { isScheduledToday } from "@/lib/recurrence";
-import type { Child, Task } from "@/lib/types";
+import type { Child, Streak, Task } from "@/lib/types";
 import PointsBadge from "@/components/PointsBadge";
 import TaskBoard from "@/components/TaskBoard";
 
@@ -32,6 +32,18 @@ export default async function KidDashboard() {
     .filter((_, i) => completionChecks[i].exists && !completionChecks[i].data()?.voided)
     .map((task) => task.id);
 
+  const dailyTasks = tasks.filter((task) => task.recurrence === "daily");
+  const streakSnaps = await Promise.all(
+    dailyTasks.map((task) =>
+      familyRef.collection("children").doc(childId).collection("streaks").doc(task.id).get()
+    )
+  );
+  const streakByTaskId: Record<string, number> = {};
+  dailyTasks.forEach((task, i) => {
+    const snap = streakSnaps[i];
+    if (snap.exists) streakByTaskId[task.id] = (snap.data() as Streak).currentStreak;
+  });
+
   const child = childSnap.data() as Child;
 
   return (
@@ -42,6 +54,7 @@ export default async function KidDashboard() {
         childId={childId}
         initialTasks={tasks}
         initialCompletedTodayIds={completedTodayIds}
+        initialStreaks={streakByTaskId}
       />
     </div>
   );
