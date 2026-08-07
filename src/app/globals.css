@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f7f7fb;
+  --surface: #ffffff;
+  --surface-elevated: #ffffff;
+  --foreground: #1a1a2e;
+  --muted: #6b6b85;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --success: #16a34a;
+  --danger: #dc2626;
+  --hairline: #e2e2ef;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --color-hairline: var(--hairline);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* Bright, high-energy palette for the kid-facing routes. */
+.kid-theme {
+  --background: #fff8ec;
+  --surface: #ffffff;
+  --surface-elevated: #ffffff;
+  --foreground: #251a3a;
+  --muted: #7a6f95;
+  --accent: #ff6b35;
+  --accent-hover: #ff8557;
+  --success: #22c55e;
+  --danger: #ef4444;
+  --hairline: #ffe3c2;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont,
+    "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
