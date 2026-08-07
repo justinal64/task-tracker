@@ -12,7 +12,7 @@ export default function TaskRow({
 }: {
   taskId: string;
   task: Task;
-  assigneeLabel: string;
+  assigneeLabel?: string;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -49,7 +49,8 @@ export default function TaskRow({
           {task.title}
         </p>
         <p className="text-sm text-muted">
-          {assigneeLabel} · {task.points} pts · {task.recurrence === "daily" ? "Daily" : "One-off"}
+          {assigneeLabel && `${assigneeLabel} · `}
+          {task.points} pts · {task.recurrence === "daily" ? "Daily" : "One-off"}
         </p>
       </div>
       <div className="flex items-center gap-3">
