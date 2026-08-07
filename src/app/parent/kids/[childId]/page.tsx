@@ -3,6 +3,7 @@ import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/firebase-admin";
 import type { Child } from "@/lib/types";
 import KidDetailForm from "@/components/KidDetailForm";
+import AdjustPointsForm from "@/components/AdjustPointsForm";
 
 export default async function KidDetailPage({
   params,
@@ -27,6 +28,7 @@ export default async function KidDetailPage({
       <h1 className="text-xl font-semibold tracking-tight">
         {child.avatarEmoji} {child.name} · {child.pointsBalance} pts
       </h1>
+      <AdjustPointsForm childId={childId} />
       <KidDetailForm childId={childId} child={child} />
     </div>
   );
