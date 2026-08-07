@@ -36,7 +36,9 @@ export default async function ActivityPage({
     const label =
       entry.type === "completion"
         ? (entry.taskTitle ?? "Task completed")
-        : (entry.reason ?? "Manual adjustment");
+        : entry.type === "redemption"
+          ? (entry.rewardTitle ?? "Reward redeemed")
+          : (entry.reason ?? "Manual adjustment");
     return {
       id: doc.id,
       childName: child?.name ?? "Unknown",

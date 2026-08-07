@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/firebase-admin";
 import type { Child } from "@/lib/types";
+import ParentNotifications from "@/components/ParentNotifications";
 
 export default async function ParentDashboard() {
   const user = await getSessionUser();
@@ -19,6 +20,8 @@ export default async function ParentDashboard() {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
       <h1 className="text-xl font-semibold tracking-tight">Dashboard</h1>
+
+      <ParentNotifications familyId={user!.familyId} kids={children} />
 
       {children.length === 0 ? (
         <div className="rounded-lg border border-hairline bg-surface p-6 text-center text-muted">
@@ -58,6 +61,12 @@ export default async function ParentDashboard() {
           className="rounded-lg border border-hairline bg-surface px-4 py-2.5 text-sm font-semibold hover:bg-background"
         >
           Manage kids
+        </Link>
+        <Link
+          href="/parent/rewards"
+          className="rounded-lg border border-hairline bg-surface px-4 py-2.5 text-sm font-semibold hover:bg-background"
+        >
+          Manage rewards
         </Link>
       </div>
     </div>
