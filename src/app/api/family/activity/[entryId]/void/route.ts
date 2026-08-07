@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
 import { db } from "@/lib/firebase-admin";
 import { requireParentSession } from "@/lib/session";
-import type { ActivityEntry, Child, Task } from "@/lib/types";
+import type { ActivityEntry, Child, Reward, Task } from "@/lib/types";
 
 class HttpError extends Error {
   constructor(public status: number, message: string) {
@@ -51,10 +51,22 @@ export async function POST(
         }
       }
 
+      let restockRewardRef = null;
+      if (entry.type === "redemption" && entry.rewardId) {
+        const rewardRef = familyRef.collection("rewards").doc(entry.rewardId);
+        const rewardSnap = await tx.get(rewardRef);
+        if (rewardSnap.exists && (rewardSnap.data() as Reward).stock !== null) {
+          restockRewardRef = rewardRef;
+        }
+      }
+
       tx.update(entryRef, { voided: true });
       tx.update(childRef, { pointsBalance: FieldValue.increment(-entry.points) });
       if (reopenTaskRef) {
         tx.update(reopenTaskRef, { active: true });
+      }
+      if (restockRewardRef) {
+        tx.update(restockRewardRef, { stock: FieldValue.increment(1) });
       }
 
       const child = childSnap.data() as Child;

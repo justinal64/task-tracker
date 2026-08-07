@@ -57,6 +57,7 @@ export default function RewardBoard({
           title={reward.title}
           description={reward.description}
           cost={reward.cost}
+          stock={reward.stock}
           redeemed={redeemed.has(reward.id)}
           affordable={balance >= reward.cost}
           onRedeemed={() =>

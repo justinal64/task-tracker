@@ -28,6 +28,20 @@ export async function PATCH(
       }
       updates.cost = costNum;
     }
+    if ("stock" in body) {
+      if (body.stock === null || body.stock === undefined || body.stock === "") {
+        updates.stock = null;
+      } else {
+        const stockNum = Number(body.stock);
+        if (!Number.isInteger(stockNum) || stockNum < 0) {
+          return NextResponse.json(
+            { error: "Quantity must be zero or a positive whole number." },
+            { status: 400 }
+          );
+        }
+        updates.stock = stockNum;
+      }
+    }
     if (typeof body.active === "boolean") updates.active = body.active;
 
     if (Object.keys(updates).length === 0) {

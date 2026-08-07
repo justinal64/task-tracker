@@ -9,6 +9,7 @@ export default function RewardCard({
   title,
   description,
   cost,
+  stock,
   redeemed,
   affordable,
   onRedeemed,
@@ -17,15 +18,17 @@ export default function RewardCard({
   title: string;
   description: string | null;
   cost: number;
+  stock: number | null;
   redeemed: boolean;
   affordable: boolean;
   onRedeemed: () => void;
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const outOfStock = stock !== null && stock <= 0;
 
   async function handleRedeem(e: React.MouseEvent<HTMLButtonElement>) {
-    if (redeemed || !affordable || loading) return;
+    if (redeemed || !affordable || outOfStock || loading) return;
     const { clientX, clientY } = e;
     setLoading(true);
     setError(null);
@@ -43,7 +46,7 @@ export default function RewardCard({
     }
   }
 
-  const disabled = redeemed || !affordable || loading;
+  const disabled = redeemed || !affordable || outOfStock || loading;
 
   return (
     <div
@@ -71,9 +74,15 @@ export default function RewardCard({
         <span className="flex-1">
           <p className="font-medium">{title}</p>
           {description && <p className="text-sm text-muted">{description}</p>}
-          <p className="text-sm font-semibold text-accent">{cost} pts</p>
+          <p className="text-sm font-semibold text-accent">
+            {cost} pts
+            {stock !== null && !redeemed && <span className="text-muted"> · {stock} left</span>}
+          </p>
         </span>
-        {!redeemed && !affordable && (
+        {!redeemed && outOfStock && (
+          <span className="shrink-0 text-sm text-danger">Out of stock</span>
+        )}
+        {!redeemed && !outOfStock && !affordable && (
           <span className="shrink-0 text-sm text-muted">Not enough points</span>
         )}
       </button>

@@ -47,6 +47,9 @@ export async function POST(
       const child = childSnap.data() as Child;
 
       if (!reward.active) throw new HttpError(409, "This reward is no longer available.");
+      if (reward.stock !== null && reward.stock <= 0) {
+        throw new HttpError(409, "Out of stock.");
+      }
       if (child.pointsBalance < reward.cost) {
         throw new HttpError(409, "Not enough points.");
       }
@@ -67,6 +70,9 @@ export async function POST(
         createdBy: user.uid,
       });
       tx.update(childRef, { pointsBalance: FieldValue.increment(-reward.cost) });
+      if (reward.stock !== null) {
+        tx.update(rewardRef, { stock: FieldValue.increment(-1) });
+      }
 
       return child.pointsBalance - reward.cost;
     });

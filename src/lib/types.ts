@@ -52,6 +52,8 @@ export interface Reward {
   title: string;
   description: string | null;
   cost: number;
+  /** null = unlimited; otherwise the number of remaining claims across all kids. */
+  stock: number | null;
   active: boolean;
   createdAt: number;
   createdBy: string;
