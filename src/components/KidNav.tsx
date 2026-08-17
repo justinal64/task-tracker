@@ -16,6 +16,11 @@ export default function KidNav({ displayName }: { displayName: string }) {
     router.refresh();
   }
 
+  async function handleLock() {
+    await fetch("/api/kid/lock", { method: "POST" });
+    router.refresh();
+  }
+
   return (
     <nav className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b border-hairline bg-surface px-4 py-4 sm:px-6">
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
@@ -45,9 +50,14 @@ export default function KidNav({ displayName }: { displayName: string }) {
           Screen Time
         </Link>
       </div>
-      <button onClick={handleLogout} className="text-sm text-muted hover:text-foreground">
-        Log out
-      </button>
+      <div className="flex items-center gap-4">
+        <button onClick={handleLock} className="text-sm text-muted hover:text-foreground">
+          🔒 Lock
+        </button>
+        <button onClick={handleLogout} className="text-sm text-muted hover:text-foreground">
+          Log out
+        </button>
+      </div>
     </nav>
   );
 }

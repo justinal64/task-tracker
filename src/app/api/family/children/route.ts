@@ -32,7 +32,14 @@ export async function POST(req: NextRequest) {
       .doc(childId);
 
     await Promise.all([
-      childRef.set({ name: name.trim(), avatarEmoji, pointsBalance: 0, centsPerPoint: null, createdAt: now }),
+      childRef.set({
+        name: name.trim(),
+        avatarEmoji,
+        pointsBalance: 0,
+        centsPerPoint: null,
+        locked: false,
+        createdAt: now,
+      }),
       childRef.collection("private").doc("credentials").set({
         pinHash: await hashPin(pin),
         failedAttempts: 0,

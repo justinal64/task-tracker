@@ -20,6 +20,9 @@ export interface Child {
    * as pointsBalance * centsPerPoint dollars instead of raw points. The underlying economy
    * is still points -- this only changes how it's presented for this child. */
   centsPerPoint: number | null;
+  /** In-app read-only kiosk lock. True hides interactive content behind a PIN-reentry
+   * screen; the kid stays signed in, this doesn't touch the auth session. */
+  locked: boolean;
   createdAt: number;
 }
 
