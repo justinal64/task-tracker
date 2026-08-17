@@ -70,7 +70,21 @@ export interface Reward {
   createdBy: string;
 }
 
-export type ActivityType = "completion" | "adjustment" | "redemption";
+/** A kid-initiated ask for a privilege that wasn't necessarily a predefined Reward
+ * (e.g. "can I have 30 extra min of screen time?"). Parent approves/rejects; an
+ * approval with a pointCost deducts points the same way a redemption does. */
+export interface PrivilegeRequest {
+  childId: string;
+  title: string;
+  description: string | null;
+  pointCost: number | null;
+  status: "pending" | "approved" | "rejected";
+  createdAt: number;
+  resolvedAt: number | null;
+  resolvedBy: string | null;
+}
+
+export type ActivityType = "completion" | "adjustment" | "redemption" | "request";
 
 export interface ActivityEntry {
   type: ActivityType;
@@ -80,7 +94,10 @@ export interface ActivityEntry {
   taskTitle: string | null;
   rewardId: string | null;
   rewardTitle: string | null;
+  /** Set only for type: 'request' -- the approved/rejected PrivilegeRequest this entry resulted from. */
+  requestId: string | null;
   dateKey: string | null;
+  /** Free text: adjustment reason, or a 'request' entry's title. */
   reason: string | null;
   /** Only meaningful for type: 'redemption' -- has a parent seen this yet? */
   acknowledged: boolean | null;

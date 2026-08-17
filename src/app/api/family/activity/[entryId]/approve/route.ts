@@ -89,6 +89,7 @@ export async function POST(
             taskTitle: null,
             rewardId: null,
             rewardTitle: null,
+            requestId: null,
             dateKey: null,
             reason: `${currentStreak}-day streak bonus! 🔥`,
             acknowledged: null,

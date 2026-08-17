@@ -34,6 +34,7 @@ export async function POST(
       taskTitle: null,
       rewardId: null,
       rewardTitle: null,
+      requestId: null,
       dateKey: null,
       reason: typeof reason === "string" && reason.trim() ? reason.trim() : null,
       acknowledged: null,

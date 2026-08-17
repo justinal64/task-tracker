@@ -32,6 +32,12 @@ export default function KidNav({ displayName }: { displayName: string }) {
         >
           Rewards
         </Link>
+        <Link
+          href="/kid/requests"
+          className={`text-sm ${pathname === "/kid/requests" ? "text-accent" : "text-muted hover:text-foreground"}`}
+        >
+          Requests
+        </Link>
       </div>
       <button onClick={handleLogout} className="text-sm text-muted hover:text-foreground">
         Log out

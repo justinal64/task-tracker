@@ -63,6 +63,12 @@ service cloud.firestore {
         // and /api/family/.../adjust-points routes, or the acknowledge route -- never direct
         allow write: if false;
       }
+
+      match /requests/{requestId} {
+        allow read: if isParentOfFamily(familyId) || request.auth.uid == resource.data.childId;
+        // always via /api/requests (create) and /api/family/requests/.../approve|reject -- never direct
+        allow write: if false;
+      }
     }
   }
 }

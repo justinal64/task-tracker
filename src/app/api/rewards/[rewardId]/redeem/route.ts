@@ -62,6 +62,7 @@ export async function POST(
         taskTitle: null,
         rewardId,
         rewardTitle: reward.title,
+        requestId: null,
         dateKey: null,
         reason: null,
         acknowledged: false,
