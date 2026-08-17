@@ -31,6 +31,8 @@ export default function TaskEditForm({
   const [recurrence, setRecurrence] = useState<Recurrence>(task.recurrence);
   const [weekdays, setWeekdays] = useState<number[]>(task.weekdays ?? []);
   const [requiresApproval, setRequiresApproval] = useState(task.requiresApproval);
+  const [optional, setOptional] = useState(!task.required);
+  const [pinned, setPinned] = useState(task.pinned);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -61,6 +63,8 @@ export default function TaskEditForm({
           recurrence,
           weekdays,
           requiresApproval,
+          required: !optional,
+          pinned,
         }),
       });
       const data = await res.json();
@@ -164,6 +168,14 @@ export default function TaskEditForm({
           onChange={(e) => setRequiresApproval(e.target.checked)}
         />
         Requires parent approval before it counts
+      </label>
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" checked={optional} onChange={(e) => setOptional(e.target.checked)} />
+        Optional (bonus, not required)
+      </label>
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" checked={pinned} onChange={(e) => setPinned(e.target.checked)} />
+        Pin to top of the list
       </label>
       {error && <p className="text-sm text-danger">{error}</p>}
       {message && <p className="text-sm text-success">{message}</p>}

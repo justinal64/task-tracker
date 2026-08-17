@@ -1,5 +1,10 @@
 export const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+/** Pinned tasks first, then required before optional; stable otherwise. */
+export function sortTasksForDisplay<T extends { pinned: boolean; required: boolean }>(tasks: T[]): T[] {
+  return [...tasks].sort((a, b) => Number(b.pinned) - Number(a.pinned) || Number(b.required) - Number(a.required));
+}
+
 /** Hour (24h, local time) after which an undone recurring task is flagged. */
 export const REMINDER_HOUR = 18;
 

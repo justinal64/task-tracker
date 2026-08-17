@@ -21,6 +21,8 @@ export default function TaskForm({ kids }: { kids: ChildOption[] }) {
   const [recurrence, setRecurrence] = useState<Recurrence>("once");
   const [weekdays, setWeekdays] = useState<number[]>([]);
   const [requiresApproval, setRequiresApproval] = useState(false);
+  const [optional, setOptional] = useState(false);
+  const [pinned, setPinned] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -48,6 +50,8 @@ export default function TaskForm({ kids }: { kids: ChildOption[] }) {
           recurrence,
           weekdays,
           requiresApproval,
+          required: !optional,
+          pinned,
         }),
       });
       const data = await res.json();
@@ -60,6 +64,8 @@ export default function TaskForm({ kids }: { kids: ChildOption[] }) {
       setRecurrence("once");
       setWeekdays([]);
       setRequiresApproval(false);
+      setOptional(false);
+      setPinned(false);
       setOpen(false);
       router.refresh();
     } catch (err) {
@@ -163,6 +169,14 @@ export default function TaskForm({ kids }: { kids: ChildOption[] }) {
           onChange={(e) => setRequiresApproval(e.target.checked)}
         />
         Requires parent approval before it counts
+      </label>
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" checked={optional} onChange={(e) => setOptional(e.target.checked)} />
+        Optional (bonus, not required)
+      </label>
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" checked={pinned} onChange={(e) => setPinned(e.target.checked)} />
+        Pin to top of the list
       </label>
       {error && <p className="text-sm text-danger">{error}</p>}
       <div className="flex gap-2">

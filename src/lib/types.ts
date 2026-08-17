@@ -42,6 +42,10 @@ export interface Task {
   weekdays: number[] | null;
   /** When true, a kid checking this off creates a pending completion instead of awarding points immediately. */
   requiresApproval: boolean;
+  /** false = optional/bonus task, shown but not expected. Defaults true for normal chores. */
+  required: boolean;
+  /** Pinned tasks sort to the top of the kid's list. */
+  pinned: boolean;
   active: boolean;
   createdAt: number;
   createdBy: string;

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase-client";
 import TaskCard from "@/components/TaskCard";
-import { isOverdue, isScheduledToday } from "@/lib/recurrence";
+import { isOverdue, isScheduledToday, sortTasksForDisplay } from "@/lib/recurrence";
 import { isAssignedToChild } from "@/lib/assignment";
 import type { Task } from "@/lib/types";
 
@@ -50,7 +50,7 @@ export default function TaskBoard({
 
   return (
     <div className="flex flex-col gap-3">
-      {tasks.map((task) => (
+      {sortTasksForDisplay(tasks).map((task) => (
         <TaskCard
           key={task.id}
           taskId={task.id}
@@ -59,6 +59,8 @@ export default function TaskBoard({
           points={task.points}
           recurrence={task.recurrence}
           weekdays={task.weekdays}
+          required={task.required}
+          pinned={task.pinned}
           completed={completedToday.has(task.id)}
           pending={pendingToday.has(task.id)}
           streak={streaks[task.id] ?? 0}

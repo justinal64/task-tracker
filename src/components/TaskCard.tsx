@@ -15,6 +15,8 @@ export default function TaskCard({
   weekdays,
   completed,
   pending,
+  required,
+  pinned,
   streak,
   overdue,
   onCompleted,
@@ -27,6 +29,8 @@ export default function TaskCard({
   weekdays: number[] | null;
   completed: boolean;
   pending: boolean;
+  required: boolean;
+  pinned: boolean;
   streak: number;
   overdue: boolean;
   onCompleted: (result: { pending: boolean }) => void;
@@ -66,7 +70,11 @@ export default function TaskCard({
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="font-medium">
+            {pinned && "📌 "}
             {title}
+            {!required && (
+              <span className="ml-2 text-sm font-normal text-muted">optional</span>
+            )}
             {streak > 0 && (
               <span className="ml-2 text-sm font-semibold text-accent">
                 🔥 {streak}

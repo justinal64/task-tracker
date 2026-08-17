@@ -33,7 +33,9 @@ export default function TaskRow({
     <div className="flex items-center justify-between rounded-lg border border-hairline bg-surface p-4">
       <div>
         <p className={`font-medium ${!task.active ? "text-muted line-through" : ""}`}>
+          {task.pinned && "📌 "}
           {task.title}
+          {!task.required && <span className="ml-2 text-sm font-normal text-muted">optional</span>}
         </p>
         <p className="text-sm text-muted">
           {assigneeLabel && `${assigneeLabel} · `}
