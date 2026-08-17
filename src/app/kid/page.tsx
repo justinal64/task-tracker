@@ -32,7 +32,20 @@ export default async function KidDashboard() {
     )
   );
   const completedTodayIds = tasks
-    .filter((_, i) => completionChecks[i].exists && !completionChecks[i].data()?.voided)
+    .filter(
+      (_, i) =>
+        completionChecks[i].exists &&
+        !completionChecks[i].data()?.voided &&
+        completionChecks[i].data()?.approvalStatus !== "pending"
+    )
+    .map((task) => task.id);
+  const pendingTodayIds = tasks
+    .filter(
+      (_, i) =>
+        completionChecks[i].exists &&
+        !completionChecks[i].data()?.voided &&
+        completionChecks[i].data()?.approvalStatus === "pending"
+    )
     .map((task) => task.id);
 
   const dailyTasks = tasks.filter((task) => task.recurrence === "daily");
@@ -57,6 +70,7 @@ export default async function KidDashboard() {
         childId={childId}
         initialTasks={tasks}
         initialCompletedTodayIds={completedTodayIds}
+        initialPendingTodayIds={pendingTodayIds}
         initialStreaks={streakByTaskId}
       />
     </div>

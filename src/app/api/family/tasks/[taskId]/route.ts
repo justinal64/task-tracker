@@ -65,6 +65,7 @@ export async function PATCH(
     }
 
     if (typeof body.active === "boolean") updates.active = body.active;
+    if (typeof body.requiresApproval === "boolean") updates.requiresApproval = body.requiresApproval;
 
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ error: "Nothing to update." }, { status: 400 });

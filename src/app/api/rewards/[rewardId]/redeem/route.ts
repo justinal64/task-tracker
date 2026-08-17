@@ -66,6 +66,7 @@ export async function POST(
         reason: null,
         acknowledged: false,
         voided: false,
+        approvalStatus: null,
         createdAt: Date.now(),
         createdBy: user.uid,
       });

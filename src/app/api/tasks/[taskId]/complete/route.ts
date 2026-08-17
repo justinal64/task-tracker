@@ -42,6 +42,8 @@ export async function POST(
     const childRef = familyRef.collection("children").doc(childId);
     const streakRef = childRef.collection("streaks").doc(taskId);
 
+    let pending = false;
+
     const newBalance = await db.runTransaction(async (tx) => {
       const [taskSnap, childSnap] = await Promise.all([tx.get(taskRef), tx.get(childRef)]);
 
@@ -83,6 +85,30 @@ export async function POST(
         throw new HttpError(409, "Already completed.");
       }
 
+      // A task that requires approval logs a pending completion but doesn't
+      // award anything yet -- points, streaks, and active-flip all happen
+      // in the approve endpoint instead, once a parent signs off.
+      if (task.requiresApproval) {
+        pending = true;
+        tx.set(activityRef, {
+          type: "completion",
+          childId,
+          points: task.points,
+          taskId,
+          taskTitle: task.title,
+          rewardId: null,
+          rewardTitle: null,
+          dateKey: task.recurrence !== "once" ? dateKey() : null,
+          reason: null,
+          acknowledged: null,
+          voided: false,
+          approvalStatus: "pending",
+          createdAt: Date.now(),
+          createdBy: user.uid,
+        });
+        return child.pointsBalance;
+      }
+
       const streakSnap = task.recurrence === "daily" ? await tx.get(streakRef) : null;
 
       tx.set(activityRef, {
@@ -97,6 +123,7 @@ export async function POST(
         reason: null,
         acknowledged: null,
         voided: false,
+        approvalStatus: null,
         createdAt: Date.now(),
         createdBy: user.uid,
       });
@@ -133,6 +160,7 @@ export async function POST(
             reason: `${currentStreak}-day streak bonus! 🔥`,
             acknowledged: null,
             voided: false,
+            approvalStatus: null,
             createdAt: Date.now(),
             createdBy: user.uid,
           });
@@ -144,7 +172,7 @@ export async function POST(
       return child.pointsBalance + task.points + bonusPoints;
     });
 
-    return NextResponse.json({ pointsBalance: newBalance });
+    return NextResponse.json({ pointsBalance: newBalance, pending });
   } catch (err) {
     if (err instanceof HttpError) {
       return NextResponse.json({ error: err.message }, { status: err.status });

@@ -30,6 +30,9 @@ export default function ParentNav({ displayName }: { displayName: string }) {
         <Link href="/parent/rewards" className="text-sm text-muted hover:text-foreground">
           Rewards
         </Link>
+        <Link href="/parent/approvals" className="text-sm text-muted hover:text-foreground">
+          Approvals
+        </Link>
         <Link href="/parent/activity" className="text-sm text-muted hover:text-foreground">
           Activity
         </Link>

@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     const user = await requireParentSession();
     if (!user) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
 
-    const { title, description, points, assignedTo, recurrence, weekdays } = await req.json();
+    const { title, description, points, assignedTo, recurrence, weekdays, requiresApproval } = await req.json();
 
     if (!title || typeof title !== "string" || !title.trim()) {
       return NextResponse.json({ error: "Title is required." }, { status: 400 });
@@ -51,6 +51,7 @@ export async function POST(req: NextRequest) {
         assignedTo,
         recurrence,
         weekdays: weekdaysResult.value,
+        requiresApproval: requiresApproval === true,
         active: true,
         createdAt: Date.now(),
         createdBy: user.uid,

@@ -30,6 +30,7 @@ export default function TaskEditForm({
   );
   const [recurrence, setRecurrence] = useState<Recurrence>(task.recurrence);
   const [weekdays, setWeekdays] = useState<number[]>(task.weekdays ?? []);
+  const [requiresApproval, setRequiresApproval] = useState(task.requiresApproval);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -59,6 +60,7 @@ export default function TaskEditForm({
           assignedTo,
           recurrence,
           weekdays,
+          requiresApproval,
         }),
       });
       const data = await res.json();
@@ -154,6 +156,14 @@ export default function TaskEditForm({
           ))}
         </div>
       )}
+      <label className="flex items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          checked={requiresApproval}
+          onChange={(e) => setRequiresApproval(e.target.checked)}
+        />
+        Requires parent approval before it counts
+      </label>
       {error && <p className="text-sm text-danger">{error}</p>}
       {message && <p className="text-sm text-success">{message}</p>}
       <div className="flex gap-2">

@@ -38,6 +38,7 @@ export async function POST(
       reason: typeof reason === "string" && reason.trim() ? reason.trim() : null,
       acknowledged: null,
       voided: false,
+      approvalStatus: null,
       createdAt: Date.now(),
       createdBy: user.uid,
     });

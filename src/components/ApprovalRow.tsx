@@ -1,0 +1,67 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+export default function ApprovalRow({
+  entryId,
+  childName,
+  childAvatar,
+  taskTitle,
+  points,
+}: {
+  entryId: string;
+  childName: string;
+  childAvatar: string;
+  taskTitle: string;
+  points: number;
+  createdAt: number;
+}) {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function respond(action: "approve" | "reject") {
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/family/activity/${entryId}/${action}`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Could not update.");
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not update.");
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-2 rounded-lg border border-hairline bg-surface p-4">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <p className="font-medium">
+            {childAvatar} {childName} · {taskTitle}
+          </p>
+          <p className="text-sm text-muted">{points} pts</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => respond("approve")}
+            disabled={busy}
+            className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-hover disabled:opacity-60"
+          >
+            Approve
+          </button>
+          <button
+            onClick={() => respond("reject")}
+            disabled={busy}
+            className="rounded-lg border border-danger px-4 py-2 text-sm font-semibold text-danger hover:bg-danger/10 disabled:opacity-60"
+          >
+            Reject
+          </button>
+        </div>
+      </div>
+      {error && <p className="text-sm text-danger">{error}</p>}
+    </div>
+  );
+}

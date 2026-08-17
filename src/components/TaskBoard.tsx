@@ -17,16 +17,19 @@ export default function TaskBoard({
   childId,
   initialTasks,
   initialCompletedTodayIds,
+  initialPendingTodayIds,
   initialStreaks,
 }: {
   familyId: string;
   childId: string;
   initialTasks: TaskWithId[];
   initialCompletedTodayIds: string[];
+  initialPendingTodayIds: string[];
   initialStreaks: Record<string, number>;
 }) {
   const [tasks, setTasks] = useState(initialTasks);
   const [completedToday, setCompletedToday] = useState(new Set(initialCompletedTodayIds));
+  const [pendingToday, setPendingToday] = useState(new Set(initialPendingTodayIds));
   const [streaks, setStreaks] = useState(initialStreaks);
 
   useEffect(() => {
@@ -57,9 +60,18 @@ export default function TaskBoard({
           recurrence={task.recurrence}
           weekdays={task.weekdays}
           completed={completedToday.has(task.id)}
+          pending={pendingToday.has(task.id)}
           streak={streaks[task.id] ?? 0}
-          overdue={isOverdue(task, completedToday.has(task.id))}
-          onCompleted={() => {
+          overdue={isOverdue(task, completedToday.has(task.id) || pendingToday.has(task.id))}
+          onCompleted={({ pending }) => {
+            if (pending) {
+              setPendingToday((prev) => {
+                const next = new Set(prev);
+                next.add(task.id);
+                return next;
+              });
+              return;
+            }
             setCompletedToday((prev) => {
               const next = new Set(prev);
               next.add(task.id);

@@ -14,6 +14,7 @@ export default function TaskCard({
   recurrence,
   weekdays,
   completed,
+  pending,
   streak,
   overdue,
   onCompleted,
@@ -25,9 +26,10 @@ export default function TaskCard({
   recurrence: Recurrence;
   weekdays: number[] | null;
   completed: boolean;
+  pending: boolean;
   streak: number;
   overdue: boolean;
-  onCompleted: () => void;
+  onCompleted: (result: { pending: boolean }) => void;
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,9 +41,11 @@ export default function TaskCard({
       const res = await fetch(`/api/tasks/${taskId}/complete`, { method: "POST" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Could not mark done.");
-      fireConfetti(e.clientX, e.clientY);
-      playSuccessChime();
-      onCompleted();
+      if (!data.pending) {
+        fireConfetti(e.clientX, e.clientY);
+        playSuccessChime();
+      }
+      onCompleted({ pending: !!data.pending });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not mark done.");
     } finally {
@@ -52,7 +56,7 @@ export default function TaskCard({
   return (
     <div
       className={`flex flex-col gap-2 rounded-xl border p-4 ${
-        completed
+        completed || pending
           ? "border-hairline bg-background opacity-60"
           : overdue
             ? "border-danger bg-surface"
@@ -83,6 +87,8 @@ export default function TaskCard({
         </div>
         {completed ? (
           <span className="shrink-0 text-sm font-semibold text-success">✓ Done</span>
+        ) : pending ? (
+          <span className="shrink-0 text-sm font-semibold text-muted">⏳ Pending approval</span>
         ) : (
           <button
             onClick={handleComplete}

@@ -20,6 +20,7 @@ export default function TaskForm({ kids }: { kids: ChildOption[] }) {
   const [assignedTo, setAssignedTo] = useState<string[]>(kids[0] ? [kids[0].id] : []);
   const [recurrence, setRecurrence] = useState<Recurrence>("once");
   const [weekdays, setWeekdays] = useState<number[]>([]);
+  const [requiresApproval, setRequiresApproval] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -46,6 +47,7 @@ export default function TaskForm({ kids }: { kids: ChildOption[] }) {
           assignedTo,
           recurrence,
           weekdays,
+          requiresApproval,
         }),
       });
       const data = await res.json();
@@ -57,6 +59,7 @@ export default function TaskForm({ kids }: { kids: ChildOption[] }) {
       setAssignedTo(kids[0] ? [kids[0].id] : []);
       setRecurrence("once");
       setWeekdays([]);
+      setRequiresApproval(false);
       setOpen(false);
       router.refresh();
     } catch (err) {
@@ -152,6 +155,14 @@ export default function TaskForm({ kids }: { kids: ChildOption[] }) {
           ))}
         </div>
       )}
+      <label className="flex items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          checked={requiresApproval}
+          onChange={(e) => setRequiresApproval(e.target.checked)}
+        />
+        Requires parent approval before it counts
+      </label>
       {error && <p className="text-sm text-danger">{error}</p>}
       <div className="flex gap-2">
         <button

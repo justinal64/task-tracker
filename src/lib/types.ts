@@ -38,6 +38,8 @@ export interface Task {
   recurrence: Recurrence;
   /** Only set (and non-empty) when recurrence === 'weekly'. 0 = Sunday .. 6 = Saturday. */
   weekdays: number[] | null;
+  /** When true, a kid checking this off creates a pending completion instead of awarding points immediately. */
+  requiresApproval: boolean;
   active: boolean;
   createdAt: number;
   createdBy: string;
@@ -78,6 +80,8 @@ export interface ActivityEntry {
   acknowledged: boolean | null;
   /** Only meaningful for type: 'completion' | 'redemption' -- has a parent reversed this? */
   voided: boolean;
+  /** Only meaningful for a 'completion' of a task with requiresApproval: true. null = approval doesn't apply to this entry. */
+  approvalStatus: "pending" | "approved" | "rejected" | null;
   createdAt: number;
   createdBy: string;
 }
