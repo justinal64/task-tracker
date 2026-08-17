@@ -69,6 +69,12 @@ service cloud.firestore {
         // always via /api/requests (create) and /api/family/requests/.../approve|reject -- never direct
         allow write: if false;
       }
+
+      match /screenTimeSessions/{sessionId} {
+        allow read: if isParentOfFamily(familyId) || request.auth.uid == resource.data.childId;
+        // always via /api/screen-time/start|stop -- never direct
+        allow write: if false;
+      }
     }
   }
 }

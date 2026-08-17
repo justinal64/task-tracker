@@ -38,6 +38,12 @@ export default function KidNav({ displayName }: { displayName: string }) {
         >
           Requests
         </Link>
+        <Link
+          href="/kid/screen-time"
+          className={`text-sm ${pathname === "/kid/screen-time" ? "text-accent" : "text-muted hover:text-foreground"}`}
+        >
+          Screen Time
+        </Link>
       </div>
       <button onClick={handleLogout} className="text-sm text-muted hover:text-foreground">
         Log out

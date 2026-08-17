@@ -113,6 +113,19 @@ export interface ActivityEntry {
   createdBy: string;
 }
 
+/** Self-reported screen time (no OS-level enforcement -- see the issue doc for why a
+ * real cross-device Screen Time integration isn't reachable from this web stack). One
+ * open session (endedAt: null) per child at a time. */
+export interface ScreenTimeSession {
+  childId: string;
+  startedAt: number;
+  endedAt: number | null;
+  durationMinutes: number | null;
+  /** Day the session started, for "today's total" queries. */
+  dateKey: string;
+  createdBy: string;
+}
+
 export interface SessionUser {
   uid: string;
   role: Role;
