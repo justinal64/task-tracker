@@ -118,6 +118,7 @@ export default function TaskForm({ kids }: { kids: ChildOption[] }) {
         >
           <option value="once">One-off</option>
           <option value="daily">Daily</option>
+          <option value="weekly-any">Weekly (any day)</option>
           <option value="weekly">Specific days</option>
         </select>
       </div>

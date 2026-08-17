@@ -1,7 +1,7 @@
 import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/firebase-admin";
 import { dateKey } from "@/lib/pin";
-import { isScheduledToday } from "@/lib/recurrence";
+import { isScheduledToday, weeklyAnyWindowIndex } from "@/lib/recurrence";
 import { isAssignedToChild } from "@/lib/assignment";
 import type { Child, Streak, Task } from "@/lib/types";
 import PointsBadge from "@/components/PointsBadge";
@@ -24,12 +24,15 @@ export default async function KidDashboard() {
 
   const todayKey = dateKey();
   const completionChecks = await Promise.all(
-    tasks.map((task) =>
-      familyRef
-        .collection("activity")
-        .doc(task.recurrence === "once" ? `${task.id}__${childId}` : `${task.id}__${childId}__${todayKey}`)
-        .get()
-    )
+    tasks.map((task) => {
+      const id =
+        task.recurrence === "once"
+          ? `${task.id}__${childId}`
+          : task.recurrence === "weekly-any"
+            ? `${task.id}__${childId}__w${weeklyAnyWindowIndex(task)}`
+            : `${task.id}__${childId}__${todayKey}`;
+      return familyRef.collection("activity").doc(id).get();
+    })
   );
   const completedTodayIds = tasks
     .filter(

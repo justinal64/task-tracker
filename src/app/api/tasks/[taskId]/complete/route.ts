@@ -3,7 +3,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { db } from "@/lib/firebase-admin";
 import { getSessionUser } from "@/lib/session";
 import { dateKey } from "@/lib/pin";
-import { isScheduledToday } from "@/lib/recurrence";
+import { isScheduledToday, weeklyAnyWindowIndex } from "@/lib/recurrence";
 import { isAssignedToChild } from "@/lib/assignment";
 import type { Child, Streak, Task } from "@/lib/types";
 
@@ -61,8 +61,18 @@ export async function POST(
         throw new HttpError(409, "This task isn't scheduled for today.");
       }
 
+      // "once" tasks track completion per assignee, forever, until voided.
+      // "weekly-any" tasks track completion per assignee per 7-day window
+      // (since the task was created) rather than per calendar day -- once a
+      // window passes, its id changes and a fresh completion is possible,
+      // while a still-pending or already-completed entry in the *current*
+      // window blocks a repeat the same way "once" does.
       const activityId =
-        task.recurrence === "once" ? `${taskId}__${childId}` : `${taskId}__${childId}__${dateKey()}`;
+        task.recurrence === "once"
+          ? `${taskId}__${childId}`
+          : task.recurrence === "weekly-any"
+            ? `${taskId}__${childId}__w${weeklyAnyWindowIndex(task)}`
+            : `${taskId}__${childId}__${dateKey()}`;
       const activityRef = familyRef.collection("activity").doc(activityId);
 
       // For a one-off task assigned to multiple children, also check whether

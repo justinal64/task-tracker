@@ -3,9 +3,22 @@ export const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 /** Hour (24h, local time) after which an undone recurring task is flagged. */
 export const REMINDER_HOUR = 18;
 
-/** A recurring (not one-off) task that's still undone once it's evening. */
+/** A recurring (not one-off) task that's still undone once it's evening. Doesn't apply to
+ * 'weekly-any' -- a floating weekly task isn't "overdue" just because today isn't over yet. */
 export function isOverdue(task: { recurrence: string }, completed: boolean): boolean {
-  return task.recurrence !== "once" && !completed && new Date().getHours() >= REMINDER_HOUR;
+  return (
+    (task.recurrence === "daily" || task.recurrence === "weekly") &&
+    !completed &&
+    new Date().getHours() >= REMINDER_HOUR
+  );
+}
+
+const WEEKLY_ANY_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+
+/** Which 7-day window (counting from when the task was created) "now" falls in, for the
+ * floating 'weekly-any' recurrence -- due once per window, not tied to a specific weekday. */
+export function weeklyAnyWindowIndex(task: { createdAt: number }, now: number = Date.now()): number {
+  return Math.floor((now - task.createdAt) / WEEKLY_ANY_WINDOW_MS);
 }
 
 /** True unless the task is a 'weekly' task not scheduled for today. */
@@ -41,5 +54,6 @@ export function weekdaysLabel(weekdays: number[]): string {
 export function recurrenceLabel(task: { recurrence: string; weekdays: number[] | null }): string {
   if (task.recurrence === "once") return "One-off";
   if (task.recurrence === "daily") return "Daily";
-  return task.weekdays ? weekdaysLabel(task.weekdays) : "Weekly";
+  if (task.recurrence === "weekly-any") return "Weekly";
+  return task.weekdays ? weekdaysLabel(task.weekdays) : "Specific days";
 }

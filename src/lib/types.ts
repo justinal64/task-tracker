@@ -26,7 +26,9 @@ export interface ChildCredentials {
   updatedAt: number;
 }
 
-export type Recurrence = "once" | "daily" | "weekly";
+/** "weekly" = specific weekday(s), possibly multiple times a week. "weekly-any" = once every
+ * 7 days, floating, not tied to a weekday. */
+export type Recurrence = "once" | "daily" | "weekly" | "weekly-any";
 /** "any" is legacy (pre-multi-assign) and only read, never written by current code. */
 export type AssignedTo = string[] | "any";
 

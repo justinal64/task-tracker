@@ -82,6 +82,7 @@ export default function TaskCard({
           <p className="text-sm font-semibold text-accent">
             {points} pts
             {recurrence === "daily" && " · daily"}
+            {recurrence === "weekly-any" && " · weekly"}
             {recurrence === "weekly" && weekdays && ` · ${weekdaysLabel(weekdays)}`}
           </p>
         </div>

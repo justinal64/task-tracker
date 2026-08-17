@@ -4,7 +4,7 @@ import { requireParentSession } from "@/lib/session";
 import { parseWeekdays } from "@/lib/recurrence";
 import type { Recurrence, Task } from "@/lib/types";
 
-const RECURRENCES: Recurrence[] = ["once", "daily", "weekly"];
+const RECURRENCES: Recurrence[] = ["once", "daily", "weekly", "weekly-any"];
 
 export async function PATCH(
   req: NextRequest,
