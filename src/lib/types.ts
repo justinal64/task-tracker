@@ -53,8 +53,10 @@ export interface Reward {
   title: string;
   description: string | null;
   cost: number;
-  /** null = unlimited; otherwise the number of remaining claims across all kids. */
+  /** null = unlimited; otherwise the number of remaining claims shared across everyone who can see this reward. */
   stock: number | null;
+  /** "all" = every kid (default); otherwise the specific child ids this reward is visible to. */
+  assignedTo: string[] | "all";
   active: boolean;
   createdAt: number;
   createdBy: string;

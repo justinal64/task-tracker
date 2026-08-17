@@ -2,15 +2,23 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Reward } from "@/lib/types";
+import type { Child, Reward } from "@/lib/types";
 
 export default function RewardRow({
   rewardId,
   reward,
+  childrenById,
 }: {
   rewardId: string;
   reward: Reward;
+  childrenById?: (Child & { id: string })[];
 }) {
+  const visibilityLabel = Array.isArray(reward.assignedTo)
+    ? childrenById
+        ?.filter((c) => (reward.assignedTo as string[]).includes(c.id))
+        .map((c) => c.name)
+        .join(", ") ?? `${reward.assignedTo.length} kid${reward.assignedTo.length === 1 ? "" : "s"}`
+    : "All kids";
   const router = useRouter();
   const [busy, setBusy] = useState(false);
 
@@ -69,6 +77,7 @@ export default function RewardRow({
             </span>
           )}
         </p>
+        <p className="text-sm text-muted">{visibilityLabel}</p>
       </div>
       <div className="flex items-center gap-3">
         {reward.stock !== null && (

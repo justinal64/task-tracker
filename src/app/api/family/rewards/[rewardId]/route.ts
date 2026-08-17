@@ -44,6 +44,27 @@ export async function PATCH(
     }
     if (typeof body.active === "boolean") updates.active = body.active;
 
+    if (body.assignedTo !== undefined) {
+      if (body.assignedTo === "all") {
+        updates.assignedTo = "all";
+      } else if (
+        Array.isArray(body.assignedTo) &&
+        body.assignedTo.length > 0 &&
+        body.assignedTo.every((id: unknown) => typeof id === "string")
+      ) {
+        const childRefs = body.assignedTo.map((id: string) =>
+          db.collection("families").doc(user.familyId).collection("children").doc(id)
+        );
+        const childSnaps = await db.getAll(...childRefs);
+        if (childSnaps.some((snap) => !snap.exists)) {
+          return NextResponse.json({ error: "Unknown child." }, { status: 400 });
+        }
+        updates.assignedTo = body.assignedTo;
+      } else {
+        return NextResponse.json({ error: "Pick at least one child, or leave it visible to all." }, { status: 400 });
+      }
+    }
+
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
     }

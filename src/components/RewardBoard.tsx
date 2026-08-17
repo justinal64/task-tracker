@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { collection, doc, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase-client";
 import RewardCard from "@/components/RewardCard";
+import { isAssignedToChild } from "@/lib/assignment";
 import type { Child, Reward } from "@/lib/types";
 
 interface RewardWithId extends Reward {
@@ -30,10 +31,13 @@ export default function RewardBoard({
   useEffect(() => {
     const q = query(collection(db, "families", familyId, "rewards"), where("active", "==", true));
     const unsub = onSnapshot(q, (snap) => {
-      setRewards(snap.docs.map((d) => ({ id: d.id, ...(d.data() as Reward) })));
+      const next = snap.docs
+        .map((d) => ({ id: d.id, ...(d.data() as Reward) }))
+        .filter((r) => isAssignedToChild(r.assignedTo, childId));
+      setRewards(next);
     });
     return unsub;
-  }, [familyId]);
+  }, [familyId, childId]);
 
   useEffect(() => {
     const ref = doc(db, "families", familyId, "children", childId);

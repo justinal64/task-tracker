@@ -1,5 +1,6 @@
 import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/firebase-admin";
+import { isAssignedToChild } from "@/lib/assignment";
 import type { Child, Reward } from "@/lib/types";
 import RewardBoard from "@/components/RewardBoard";
 
@@ -13,7 +14,9 @@ export default async function KidRewardsPage() {
     familyRef.collection("children").doc(childId).get(),
   ]);
 
-  const rewards = rewardsSnap.docs.map((doc) => ({ id: doc.id, ...(doc.data() as Reward) }));
+  const rewards = rewardsSnap.docs
+    .map((doc) => ({ id: doc.id, ...(doc.data() as Reward) }))
+    .filter((reward) => isAssignedToChild(reward.assignedTo, childId));
 
   const redemptionChecks = await Promise.all(
     rewards.map((reward) =>

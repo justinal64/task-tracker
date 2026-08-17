@@ -3,15 +3,27 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function RewardForm() {
+interface ChildOption {
+  id: string;
+  name: string;
+  avatarEmoji: string;
+}
+
+export default function RewardForm({ kids }: { kids: ChildOption[] }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [cost, setCost] = useState("20");
   const [stock, setStock] = useState("");
+  const [visibleToAll, setVisibleToAll] = useState(true);
+  const [assignedTo, setAssignedTo] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  function toggleChild(id: string) {
+    setAssignedTo((prev) => (prev.includes(id) ? prev.filter((d) => d !== id) : [...prev, id]));
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -26,6 +38,7 @@ export default function RewardForm() {
           description,
           cost: Number(cost),
           stock: stock === "" ? null : Number(stock),
+          assignedTo: visibleToAll ? "all" : assignedTo,
         }),
       });
       const data = await res.json();
@@ -35,6 +48,8 @@ export default function RewardForm() {
       setDescription("");
       setCost("20");
       setStock("");
+      setVisibleToAll(true);
+      setAssignedTo([]);
       setOpen(false);
       router.refresh();
     } catch (err) {
@@ -96,11 +111,38 @@ export default function RewardForm() {
           className="flex-1 rounded-lg border border-hairline bg-background px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-accent"
         />
       </div>
+      <div className="flex flex-col gap-2">
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={visibleToAll}
+            onChange={(e) => setVisibleToAll(e.target.checked)}
+          />
+          Visible to all kids
+        </label>
+        {!visibleToAll && (
+          <div className="flex flex-wrap gap-2">
+            {kids.length === 0 && <p className="text-sm text-muted">Add a kid first.</p>}
+            {kids.map((child) => (
+              <button
+                key={child.id}
+                type="button"
+                onClick={() => toggleChild(child.id)}
+                className={`rounded-lg border px-3 py-1.5 text-sm ${
+                  assignedTo.includes(child.id) ? "border-accent bg-accent/10 text-accent" : "border-hairline"
+                }`}
+              >
+                {child.avatarEmoji} {child.name}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
       {error && <p className="text-sm text-danger">{error}</p>}
       <div className="flex gap-2">
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || (!visibleToAll && assignedTo.length === 0)}
           className="rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white hover:bg-accent-hover disabled:opacity-60"
         >
           {loading ? "Adding…" : "Add reward"}

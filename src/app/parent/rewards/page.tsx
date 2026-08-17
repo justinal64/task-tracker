@@ -1,17 +1,21 @@
 import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/firebase-admin";
-import type { Reward } from "@/lib/types";
+import type { Child, Reward } from "@/lib/types";
 import RewardForm from "@/components/RewardForm";
 import RewardRow from "@/components/RewardRow";
 
 export default async function RewardsPage() {
   const user = await getSessionUser();
-  const rewardsSnap = await db
-    .collection("families")
-    .doc(user!.familyId)
-    .collection("rewards")
-    .orderBy("createdAt", "desc")
-    .get();
+  const familyRef = db.collection("families").doc(user!.familyId);
+
+  const [rewardsSnap, childrenSnap] = await Promise.all([
+    familyRef.collection("rewards").orderBy("createdAt", "desc").get(),
+    familyRef.collection("children").get(),
+  ]);
+
+  const children = childrenSnap.docs
+    .map((doc) => ({ id: doc.id, ...(doc.data() as Child) }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   const rewards = rewardsSnap.docs.map((doc) => ({
     id: doc.id,
@@ -25,11 +29,11 @@ export default async function RewardsPage() {
       <div className="flex flex-col gap-3">
         {rewards.length === 0 && <p className="text-muted">No rewards yet.</p>}
         {rewards.map((reward) => (
-          <RewardRow key={reward.id} rewardId={reward.id} reward={reward} />
+          <RewardRow key={reward.id} rewardId={reward.id} reward={reward} childrenById={children} />
         ))}
       </div>
 
-      <RewardForm />
+      <RewardForm kids={children} />
     </div>
   );
 }

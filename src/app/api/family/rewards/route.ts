@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
     const user = await requireParentSession();
     if (!user) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
 
-    const { title, description, cost, stock } = await req.json();
+    const { title, description, cost, stock, assignedTo } = await req.json();
 
     if (!title || typeof title !== "string" || !title.trim()) {
       return NextResponse.json({ error: "Title is required." }, { status: 400 });
@@ -25,6 +25,21 @@ export async function POST(req: NextRequest) {
       stockValue = stockNum;
     }
 
+    let assignedToValue: string[] | "all" = "all";
+    if (assignedTo !== undefined && assignedTo !== "all") {
+      if (!Array.isArray(assignedTo) || assignedTo.length === 0 || !assignedTo.every((id) => typeof id === "string")) {
+        return NextResponse.json({ error: "Pick at least one child, or leave it visible to all." }, { status: 400 });
+      }
+      const childRefs = assignedTo.map((id: string) =>
+        db.collection("families").doc(user.familyId).collection("children").doc(id)
+      );
+      const childSnaps = await db.getAll(...childRefs);
+      if (childSnaps.some((snap) => !snap.exists)) {
+        return NextResponse.json({ error: "Unknown child." }, { status: 400 });
+      }
+      assignedToValue = assignedTo;
+    }
+
     const ref = await db
       .collection("families")
       .doc(user.familyId)
@@ -34,6 +49,7 @@ export async function POST(req: NextRequest) {
         description: description && typeof description === "string" ? description.trim() : null,
         cost: costNum,
         stock: stockValue,
+        assignedTo: assignedToValue,
         active: true,
         createdAt: Date.now(),
         createdBy: user.uid,
