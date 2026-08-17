@@ -16,6 +16,10 @@ export interface Child {
   name: string;
   avatarEmoji: string;
   pointsBalance: number;
+  /** null = points mode (default). Non-null = cash allowance mode: display balance/costs
+   * as pointsBalance * centsPerPoint dollars instead of raw points. The underlying economy
+   * is still points -- this only changes how it's presented for this child. */
+  centsPerPoint: number | null;
   createdAt: number;
 }
 

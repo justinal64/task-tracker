@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/firebase-admin";
+import { formatBalance } from "@/lib/currency";
 import type { Child } from "@/lib/types";
 import KidDetailForm from "@/components/KidDetailForm";
 import AdjustPointsForm from "@/components/AdjustPointsForm";
@@ -26,7 +27,7 @@ export default async function KidDetailPage({
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
       <h1 className="text-xl font-semibold tracking-tight">
-        {child.avatarEmoji} {child.name} · {child.pointsBalance} pts
+        {child.avatarEmoji} {child.name} · {formatBalance(child.pointsBalance, child.centsPerPoint)}
       </h1>
       <AdjustPointsForm childId={childId} />
       <KidDetailForm childId={childId} child={child} />

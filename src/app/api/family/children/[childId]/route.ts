@@ -11,10 +11,19 @@ export async function PATCH(
     if (!user) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
     const { childId } = await params;
 
-    const { name, avatarEmoji } = await req.json();
-    const updates: Record<string, string> = {};
+    const { name, avatarEmoji, centsPerPoint } = await req.json();
+    const updates: Record<string, string | number | null> = {};
     if (typeof name === "string" && name.trim()) updates.name = name.trim();
     if (typeof avatarEmoji === "string" && avatarEmoji) updates.avatarEmoji = avatarEmoji;
+    if (centsPerPoint === null) {
+      updates.centsPerPoint = null;
+    } else if (centsPerPoint !== undefined) {
+      const rate = Number(centsPerPoint);
+      if (!Number.isFinite(rate) || rate < 0) {
+        return NextResponse.json({ error: "Rate must be zero or positive." }, { status: 400 });
+      }
+      updates.centsPerPoint = rate;
+    }
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
     }

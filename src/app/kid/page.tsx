@@ -67,7 +67,12 @@ export default async function KidDashboard() {
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
-      <PointsBadge familyId={user!.familyId} childId={childId} initialBalance={child.pointsBalance} />
+      <PointsBadge
+        familyId={user!.familyId}
+        childId={childId}
+        initialBalance={child.pointsBalance}
+        initialCentsPerPoint={child.centsPerPoint}
+      />
       <TaskBoard
         familyId={user!.familyId}
         childId={childId}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/firebase-admin";
+import { formatBalance } from "@/lib/currency";
 import type { Child } from "@/lib/types";
 import KidForm from "@/components/KidForm";
 
@@ -32,7 +33,7 @@ export default async function KidsPage() {
               <span className="text-2xl">{child.avatarEmoji}</span>
               <span className="font-medium">{child.name}</span>
             </div>
-            <span className="text-sm text-muted">{child.pointsBalance} pts</span>
+            <span className="text-sm text-muted">{formatBalance(child.pointsBalance, child.centsPerPoint)}</span>
           </Link>
         ))}
       </div>

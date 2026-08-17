@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Child } from "@/lib/types";
+import { formatBalance } from "@/lib/currency";
 
 const AVATAR_OPTIONS = ["🦁", "🐯", "🐸", "🦊", "🐼", "🐨", "🦄", "🐶", "🐱", "🐵", "🦖", "🐙"];
 
@@ -17,8 +18,13 @@ export default function KidDetailForm({
   const [name, setName] = useState(child.name);
   const [avatarEmoji, setAvatarEmoji] = useState(child.avatarEmoji);
   const [pin, setPin] = useState("");
+  const [cashMode, setCashMode] = useState(child.centsPerPoint != null);
+  const [dollarsPerPoint, setDollarsPerPoint] = useState(
+    child.centsPerPoint != null ? (child.centsPerPoint / 100).toString() : "0.10"
+  );
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPin, setSavingPin] = useState(false);
+  const [savingAllowance, setSavingAllowance] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -64,6 +70,29 @@ export default function KidDetailForm({
       setError(err instanceof Error ? err.message : "Could not reset PIN.");
     } finally {
       setSavingPin(false);
+    }
+  }
+
+  async function handleAllowanceSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setMessage(null);
+    setSavingAllowance(true);
+    try {
+      const centsPerPoint = cashMode ? Math.round(Number(dollarsPerPoint) * 100) : null;
+      const res = await fetch(`/api/family/children/${childId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ centsPerPoint }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Could not save.");
+      setMessage("Saved.");
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not save.");
+    } finally {
+      setSavingAllowance(false);
     }
   }
 
@@ -143,6 +172,41 @@ export default function KidDetailForm({
           className="self-start rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white hover:bg-accent-hover disabled:opacity-60"
         >
           {savingPin ? "Saving…" : "Set PIN"}
+        </button>
+      </form>
+
+      <form
+        onSubmit={handleAllowanceSubmit}
+        className="flex flex-col gap-4 rounded-lg border border-hairline bg-surface p-5"
+      >
+        <h2 className="font-medium">Allowance</h2>
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={cashMode} onChange={(e) => setCashMode(e.target.checked)} />
+          Cash allowance mode — show balance in dollars instead of points
+        </label>
+        {cashMode && (
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted">$</span>
+            <input
+              type="number"
+              min={0}
+              step={0.01}
+              value={dollarsPerPoint}
+              onChange={(e) => setDollarsPerPoint(e.target.value)}
+              className="w-24 rounded-lg border border-hairline bg-background px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-accent"
+            />
+            <span className="text-sm text-muted">per point</span>
+          </div>
+        )}
+        <p className="text-sm text-muted">
+          Current balance: {formatBalance(child.pointsBalance, cashMode ? Math.round(Number(dollarsPerPoint) * 100) : null)}
+        </p>
+        <button
+          type="submit"
+          disabled={savingAllowance}
+          className="self-start rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white hover:bg-accent-hover disabled:opacity-60"
+        >
+          {savingAllowance ? "Saving…" : "Save allowance settings"}
         </button>
       </form>
 
