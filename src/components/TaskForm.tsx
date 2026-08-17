@@ -17,7 +17,7 @@ export default function TaskForm({ kids }: { kids: ChildOption[] }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [points, setPoints] = useState("5");
-  const [assignedTo, setAssignedTo] = useState(kids[0]?.id ?? "");
+  const [assignedTo, setAssignedTo] = useState<string[]>(kids[0] ? [kids[0].id] : []);
   const [recurrence, setRecurrence] = useState<Recurrence>("once");
   const [weekdays, setWeekdays] = useState<number[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -25,6 +25,10 @@ export default function TaskForm({ kids }: { kids: ChildOption[] }) {
 
   function toggleWeekday(day: number) {
     setWeekdays((prev) => (prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]));
+  }
+
+  function toggleChild(id: string) {
+    setAssignedTo((prev) => (prev.includes(id) ? prev.filter((d) => d !== id) : [...prev, id]));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -50,7 +54,7 @@ export default function TaskForm({ kids }: { kids: ChildOption[] }) {
       setTitle("");
       setDescription("");
       setPoints("5");
-      setAssignedTo(kids[0]?.id ?? "");
+      setAssignedTo(kids[0] ? [kids[0].id] : []);
       setRecurrence("once");
       setWeekdays([]);
       setOpen(false);
@@ -105,19 +109,6 @@ export default function TaskForm({ kids }: { kids: ChildOption[] }) {
           className="w-24 rounded-lg border border-hairline bg-background px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-accent"
         />
         <select
-          value={assignedTo}
-          onChange={(e) => setAssignedTo(e.target.value)}
-          required
-          className="flex-1 rounded-lg border border-hairline bg-background px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-accent"
-        >
-          {kids.length === 0 && <option value="">Add a kid first</option>}
-          {kids.map((child) => (
-            <option key={child.id} value={child.id}>
-              {child.avatarEmoji} {child.name}
-            </option>
-          ))}
-        </select>
-        <select
           value={recurrence}
           onChange={(e) => setRecurrence(e.target.value as Recurrence)}
           className="rounded-lg border border-hairline bg-background px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-accent"
@@ -127,6 +118,24 @@ export default function TaskForm({ kids }: { kids: ChildOption[] }) {
           <option value="weekly">Specific days</option>
         </select>
       </div>
+      {kids.length === 0 ? (
+        <p className="text-sm text-muted">Add a kid first.</p>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          {kids.map((child) => (
+            <button
+              key={child.id}
+              type="button"
+              onClick={() => toggleChild(child.id)}
+              className={`rounded-lg border px-3 py-1.5 text-sm ${
+                assignedTo.includes(child.id) ? "border-accent bg-accent/10 text-accent" : "border-hairline"
+              }`}
+            >
+              {child.avatarEmoji} {child.name}
+            </button>
+          ))}
+        </div>
+      )}
       {recurrence === "weekly" && (
         <div className="flex flex-wrap gap-2">
           {WEEKDAY_LABELS.map((label, day) => (
@@ -147,7 +156,7 @@ export default function TaskForm({ kids }: { kids: ChildOption[] }) {
       <div className="flex gap-2">
         <button
           type="submit"
-          disabled={loading || kids.length === 0}
+          disabled={loading || kids.length === 0 || assignedTo.length === 0}
           className="rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white hover:bg-accent-hover disabled:opacity-60"
         >
           {loading ? "Adding…" : "Add task"}

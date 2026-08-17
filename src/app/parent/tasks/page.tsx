@@ -1,5 +1,6 @@
 import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/firebase-admin";
+import { isAssignedToChild } from "@/lib/assignment";
 import type { Child, Task } from "@/lib/types";
 import TaskForm from "@/components/TaskForm";
 import TaskRow from "@/components/TaskRow";
@@ -29,7 +30,7 @@ export default async function TasksPage() {
       )}
 
       {children.map((child) => {
-        const childTasks = tasks.filter((task) => task.assignedTo === child.id);
+        const childTasks = tasks.filter((task) => isAssignedToChild(task.assignedTo, child.id));
         return (
           <div key={child.id} className="flex flex-col gap-3">
             <h2 className="flex items-center gap-2 font-medium">

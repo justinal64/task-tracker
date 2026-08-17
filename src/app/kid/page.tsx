@@ -2,6 +2,7 @@ import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/firebase-admin";
 import { dateKey } from "@/lib/pin";
 import { isScheduledToday } from "@/lib/recurrence";
+import { isAssignedToChild } from "@/lib/assignment";
 import type { Child, Streak, Task } from "@/lib/types";
 import PointsBadge from "@/components/PointsBadge";
 import TaskBoard from "@/components/TaskBoard";
@@ -18,17 +19,19 @@ export default async function KidDashboard() {
 
   const tasks = tasksSnap.docs
     .map((doc) => ({ id: doc.id, ...(doc.data() as Task) }))
-    .filter((task) => task.assignedTo === "any" || task.assignedTo === childId)
+    .filter((task) => isAssignedToChild(task.assignedTo, childId))
     .filter(isScheduledToday);
 
   const todayKey = dateKey();
-  const recurringTasks = tasks.filter((task) => task.recurrence !== "once");
   const completionChecks = await Promise.all(
-    recurringTasks.map((task) =>
-      familyRef.collection("activity").doc(`${task.id}__${childId}__${todayKey}`).get()
+    tasks.map((task) =>
+      familyRef
+        .collection("activity")
+        .doc(task.recurrence === "once" ? `${task.id}__${childId}` : `${task.id}__${childId}__${todayKey}`)
+        .get()
     )
   );
-  const completedTodayIds = recurringTasks
+  const completedTodayIds = tasks
     .filter((_, i) => completionChecks[i].exists && !completionChecks[i].data()?.voided)
     .map((task) => task.id);
 

@@ -4,6 +4,7 @@ import { db } from "@/lib/firebase-admin";
 import { getSessionUser } from "@/lib/session";
 import { dateKey } from "@/lib/pin";
 import { isScheduledToday } from "@/lib/recurrence";
+import { isAssignedToChild } from "@/lib/assignment";
 import type { Child, Streak, Task } from "@/lib/types";
 
 class HttpError extends Error {
@@ -51,7 +52,7 @@ export async function POST(
       const child = childSnap.data() as Child;
 
       if (!task.active) throw new HttpError(409, "This task is no longer active.");
-      if (task.assignedTo !== "any" && task.assignedTo !== childId) {
+      if (!isAssignedToChild(task.assignedTo, childId)) {
         throw new HttpError(403, "This task isn't assigned to this child.");
       }
       if (!isScheduledToday(task)) {
@@ -59,9 +60,23 @@ export async function POST(
       }
 
       const activityId =
-        task.recurrence === "once" ? taskId : `${taskId}__${childId}__${dateKey()}`;
+        task.recurrence === "once" ? `${taskId}__${childId}` : `${taskId}__${childId}__${dateKey()}`;
       const activityRef = familyRef.collection("activity").doc(activityId);
-      const activitySnap = await tx.get(activityRef);
+
+      // For a one-off task assigned to multiple children, also check whether
+      // every other assignee has already completed it -- if this is the
+      // last one, the task can be deactivated once this completion lands.
+      const siblingIds =
+        task.recurrence === "once" && Array.isArray(task.assignedTo)
+          ? task.assignedTo.filter((id) => id !== childId)
+          : [];
+      const siblingRefs = siblingIds.map((id) =>
+        familyRef.collection("activity").doc(`${taskId}__${id}`)
+      );
+
+      const [activitySnap, ...siblingSnaps] = siblingRefs.length
+        ? await tx.getAll(activityRef, ...siblingRefs)
+        : [await tx.get(activityRef)];
       // A voided completion frees the slot back up -- undoing a mistaken
       // "done" should let the kid actually do (and log) it again.
       if (activitySnap.exists && !activitySnap.data()?.voided) {
@@ -86,7 +101,8 @@ export async function POST(
         createdBy: user.uid,
       });
       if (task.recurrence === "once") {
-        tx.update(taskRef, { active: false });
+        const allAssigneesDone = siblingSnaps.every((s) => s.exists && !s.data()?.voided);
+        if (allAssigneesDone) tx.update(taskRef, { active: false });
       }
 
       // Firestore only keeps the LAST update() call per document within a

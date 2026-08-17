@@ -5,6 +5,7 @@ import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase-client";
 import TaskCard from "@/components/TaskCard";
 import { isOverdue, isScheduledToday } from "@/lib/recurrence";
+import { isAssignedToChild } from "@/lib/assignment";
 import type { Task } from "@/lib/types";
 
 interface TaskWithId extends Task {
@@ -33,7 +34,7 @@ export default function TaskBoard({
     const unsub = onSnapshot(q, (snap) => {
       const next = snap.docs
         .map((d) => ({ id: d.id, ...(d.data() as Task) }))
-        .filter((t) => t.assignedTo === "any" || t.assignedTo === childId)
+        .filter((t) => isAssignedToChild(t.assignedTo, childId))
         .filter(isScheduledToday);
       setTasks(next);
     });

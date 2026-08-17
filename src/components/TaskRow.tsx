@@ -38,6 +38,7 @@ export default function TaskRow({
         <p className="text-sm text-muted">
           {assigneeLabel && `${assigneeLabel} · `}
           {task.points} pts · {recurrenceLabel(task)}
+          {Array.isArray(task.assignedTo) && task.assignedTo.length > 1 && ` · shared with ${task.assignedTo.length - 1} other${task.assignedTo.length > 2 ? "s" : ""}`}
         </p>
       </div>
       <div className="flex items-center gap-3">

@@ -20,8 +20,8 @@ export async function POST(req: NextRequest) {
     if (!Number.isInteger(pointsNum) || pointsNum <= 0) {
       return NextResponse.json({ error: "Points must be a positive whole number." }, { status: 400 });
     }
-    if (typeof assignedTo !== "string" || !assignedTo) {
-      return NextResponse.json({ error: "Assignee is required." }, { status: 400 });
+    if (!Array.isArray(assignedTo) || assignedTo.length === 0 || !assignedTo.every((id) => typeof id === "string")) {
+      return NextResponse.json({ error: "Pick at least one child." }, { status: 400 });
     }
     if (!RECURRENCES.includes(recurrence)) {
       return NextResponse.json({ error: "Invalid recurrence." }, { status: 400 });
@@ -31,14 +31,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: weekdaysResult.error }, { status: 400 });
     }
 
-    // Every task must be assigned to a specific child within this family.
-    const childSnap = await db
-      .collection("families")
-      .doc(user.familyId)
-      .collection("children")
-      .doc(assignedTo)
-      .get();
-    if (!childSnap.exists) {
+    // Every assignee must be a real child within this family.
+    const childRefs = assignedTo.map((id: string) =>
+      db.collection("families").doc(user.familyId).collection("children").doc(id)
+    );
+    const childSnaps = await db.getAll(...childRefs);
+    if (childSnaps.some((snap) => !snap.exists)) {
       return NextResponse.json({ error: "Unknown child." }, { status: 400 });
     }
 

@@ -37,14 +37,15 @@ export async function PATCH(
       }
       updates.points = pointsNum;
     }
-    if (typeof body.assignedTo === "string" && body.assignedTo) {
-      const childSnap = await db
-        .collection("families")
-        .doc(user.familyId)
-        .collection("children")
-        .doc(body.assignedTo)
-        .get();
-      if (!childSnap.exists) {
+    if (Array.isArray(body.assignedTo)) {
+      if (body.assignedTo.length === 0 || !body.assignedTo.every((id: unknown) => typeof id === "string")) {
+        return NextResponse.json({ error: "Pick at least one child." }, { status: 400 });
+      }
+      const childRefs = body.assignedTo.map((id: string) =>
+        db.collection("families").doc(user.familyId).collection("children").doc(id)
+      );
+      const childSnaps = await db.getAll(...childRefs);
+      if (childSnaps.some((snap) => !snap.exists)) {
         return NextResponse.json({ error: "Unknown child." }, { status: 400 });
       }
       updates.assignedTo = body.assignedTo;

@@ -27,7 +27,8 @@ export interface ChildCredentials {
 }
 
 export type Recurrence = "once" | "daily" | "weekly";
-export type AssignedTo = "any" | string;
+/** "any" is legacy (pre-multi-assign) and only read, never written by current code. */
+export type AssignedTo = string[] | "any";
 
 export interface Task {
   title: string;
