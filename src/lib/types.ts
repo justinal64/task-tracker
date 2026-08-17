@@ -1,4 +1,8 @@
-export type Role = "parent" | "child";
+/** "caregiver" (grandparent, sitter) is a restricted parent-adjacent role: can approve/reject
+ * task completions and privilege requests, adjust points, and void a mistaken entry -- but
+ * cannot manage tasks/rewards/kids or family settings (see requireApproverSession vs
+ * requireParentSession in session.ts). */
+export type Role = "parent" | "child" | "caregiver";
 
 export interface UserDoc {
   role: Role;

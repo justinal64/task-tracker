@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/firebase-admin";
 import type { Child, Task } from "@/lib/types";
@@ -10,6 +10,7 @@ export default async function TaskDetailPage({
   params: Promise<{ taskId: string }>;
 }) {
   const user = await getSessionUser();
+  if (user!.role === "caregiver") redirect("/parent");
   const { taskId } = await params;
   const familyRef = db.collection("families").doc(user!.familyId);
 

@@ -59,7 +59,7 @@ export default async function KidsPage() {
         })}
       </div>
 
-      <KidForm />
+      {user!.role !== "caregiver" && <KidForm />}
     </div>
   );
 }

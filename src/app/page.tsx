@@ -5,7 +5,7 @@ import ParentSignInForm from "@/components/ParentSignInForm";
 
 export default async function Home() {
   const user = await getSessionUser();
-  if (user?.role === "parent") redirect("/parent");
+  if (user?.role === "parent" || user?.role === "caregiver") redirect("/parent");
   if (user?.role === "child") redirect("/kid");
 
   return (

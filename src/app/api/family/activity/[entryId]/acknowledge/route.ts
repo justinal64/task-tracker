@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/firebase-admin";
-import { requireParentSession } from "@/lib/session";
+import { requireApproverSession } from "@/lib/session";
 
 export async function POST(
   _req: NextRequest,
   { params }: { params: Promise<{ entryId: string }> }
 ) {
   try {
-    const user = await requireParentSession();
+    const user = await requireApproverSession();
     if (!user) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
     const { entryId } = await params;
 

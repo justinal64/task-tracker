@@ -5,7 +5,13 @@ import { useRouter } from "next/navigation";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase-client";
 
-export default function ParentNav({ displayName }: { displayName: string }) {
+export default function ParentNav({
+  displayName,
+  isCaregiver = false,
+}: {
+  displayName: string;
+  isCaregiver?: boolean;
+}) {
   const router = useRouter();
 
   async function handleLogout() {
@@ -24,21 +30,27 @@ export default function ParentNav({ displayName }: { displayName: string }) {
         <Link href="/parent/kids" className="text-sm text-muted hover:text-foreground">
           Kids
         </Link>
-        <Link href="/parent/tasks" className="text-sm text-muted hover:text-foreground">
-          Tasks
-        </Link>
-        <Link href="/parent/rewards" className="text-sm text-muted hover:text-foreground">
-          Rewards
-        </Link>
+        {!isCaregiver && (
+          <>
+            <Link href="/parent/tasks" className="text-sm text-muted hover:text-foreground">
+              Tasks
+            </Link>
+            <Link href="/parent/rewards" className="text-sm text-muted hover:text-foreground">
+              Rewards
+            </Link>
+          </>
+        )}
         <Link href="/parent/approvals" className="text-sm text-muted hover:text-foreground">
           Approvals
         </Link>
         <Link href="/parent/activity" className="text-sm text-muted hover:text-foreground">
           Activity
         </Link>
-        <Link href="/parent/settings" className="text-sm text-muted hover:text-foreground">
-          Settings
-        </Link>
+        {!isCaregiver && (
+          <Link href="/parent/settings" className="text-sm text-muted hover:text-foreground">
+            Settings
+          </Link>
+        )}
       </div>
       <div className="flex items-center gap-4">
         <span className="text-sm text-muted">{displayName}</span>

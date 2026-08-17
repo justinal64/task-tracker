@@ -38,3 +38,12 @@ export async function requireParentSession(): Promise<SessionUser | null> {
   if (!user || user.role !== "parent") return null;
   return user;
 }
+
+/** Guard for the restricted actions a caregiver may also perform: approve/reject
+ * completions and requests, adjust points, void a mistaken entry. Not for task/reward/kid
+ * management or family settings -- those stay requireParentSession-only. */
+export async function requireApproverSession(): Promise<SessionUser | null> {
+  const user = await getSessionUser();
+  if (!user || (user.role !== "parent" && user.role !== "caregiver")) return null;
+  return user;
+}

@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/firebase-admin";
 import type { Child, Reward } from "@/lib/types";
@@ -6,6 +7,7 @@ import RewardRow from "@/components/RewardRow";
 
 export default async function RewardsPage() {
   const user = await getSessionUser();
+  if (user!.role === "caregiver") redirect("/parent");
   const familyRef = db.collection("families").doc(user!.familyId);
 
   const [rewardsSnap, childrenSnap] = await Promise.all([

@@ -30,7 +30,7 @@ export default async function KidDetailPage({
         {child.avatarEmoji} {child.name} · {formatBalance(child.pointsBalance, child.centsPerPoint)}
       </h1>
       <AdjustPointsForm childId={childId} />
-      <KidDetailForm childId={childId} child={child} />
+      {user!.role !== "caregiver" && <KidDetailForm childId={childId} child={child} />}
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/firebase-admin";
 import { isAssignedToChild } from "@/lib/assignment";
@@ -7,6 +8,7 @@ import TaskRow from "@/components/TaskRow";
 
 export default async function TasksPage() {
   const user = await getSessionUser();
+  if (user!.role === "caregiver") redirect("/parent");
   const familyRef = db.collection("families").doc(user!.familyId);
 
   const [tasksSnap, childrenSnap] = await Promise.all([
