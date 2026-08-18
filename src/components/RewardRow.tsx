@@ -20,10 +20,11 @@ export default function RewardRow({
         .join(", ") ?? `${reward.assignedTo.length} kid${reward.assignedTo.length === 1 ? "" : "s"}`
     : "All kids";
   const router = useRouter();
-  const [busy, setBusy] = useState(false);
+  const [pendingAction, setPendingAction] = useState<"toggle" | "delete" | "restock" | null>(null);
+  const busy = pendingAction !== null;
 
   async function toggleActive() {
-    setBusy(true);
+    setPendingAction("toggle");
     try {
       await fetch(`/api/family/rewards/${rewardId}`, {
         method: "PATCH",
@@ -32,23 +33,23 @@ export default function RewardRow({
       });
       router.refresh();
     } finally {
-      setBusy(false);
+      setPendingAction(null);
     }
   }
 
   async function handleDelete() {
     if (!confirm(`Delete "${reward.title}"?`)) return;
-    setBusy(true);
+    setPendingAction("delete");
     try {
       await fetch(`/api/family/rewards/${rewardId}`, { method: "DELETE" });
       router.refresh();
     } finally {
-      setBusy(false);
+      setPendingAction(null);
     }
   }
 
   async function handleRestock() {
-    setBusy(true);
+    setPendingAction("restock");
     try {
       await fetch(`/api/family/rewards/${rewardId}`, {
         method: "PATCH",
@@ -57,7 +58,7 @@ export default function RewardRow({
       });
       router.refresh();
     } finally {
-      setBusy(false);
+      setPendingAction(null);
     }
   }
 
@@ -86,7 +87,7 @@ export default function RewardRow({
             disabled={busy}
             className="text-sm text-muted hover:text-foreground disabled:opacity-60"
           >
-            +1 stock
+            {pendingAction === "restock" ? "…" : "+1 stock"}
           </button>
         )}
         <button
@@ -94,14 +95,14 @@ export default function RewardRow({
           disabled={busy}
           className="text-sm text-muted hover:text-foreground disabled:opacity-60"
         >
-          {reward.active ? "Pause" : "Resume"}
+          {pendingAction === "toggle" ? "…" : reward.active ? "Pause" : "Resume"}
         </button>
         <button
           onClick={handleDelete}
           disabled={busy}
           className="text-sm text-danger hover:opacity-80 disabled:opacity-60"
         >
-          Delete
+          {pendingAction === "delete" ? "Deleting…" : "Delete"}
         </button>
       </div>
     </div>

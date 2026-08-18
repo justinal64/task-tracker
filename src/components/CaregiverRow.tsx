@@ -42,7 +42,7 @@ export default function CaregiverRow({
         disabled={busy}
         className="text-sm text-danger hover:opacity-80 disabled:opacity-60"
       >
-        Remove
+        {busy ? "Removing…" : "Remove"}
       </button>
     </div>
   );

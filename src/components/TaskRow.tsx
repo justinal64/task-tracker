@@ -52,7 +52,7 @@ export default function TaskRow({
           disabled={busy}
           className="text-sm text-danger hover:opacity-80 disabled:opacity-60"
         >
-          Delete
+          {busy ? "Deleting…" : "Delete"}
         </button>
       </div>
     </div>

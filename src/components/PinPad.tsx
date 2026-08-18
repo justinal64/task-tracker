@@ -77,6 +77,7 @@ export default function PinPad({ childId }: { childId: string }) {
       </div>
 
       {error && <p className="text-sm text-danger">{error}</p>}
+      {isPending && <p className="text-sm text-muted">Signing in…</p>}
 
       <div className="grid grid-cols-3 gap-3">
         {KEYS.map((key, i) =>

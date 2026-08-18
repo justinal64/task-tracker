@@ -18,11 +18,12 @@ export default function ApprovalRow({
   createdAt: number;
 }) {
   const router = useRouter();
-  const [busy, setBusy] = useState(false);
+  const [pendingAction, setPendingAction] = useState<"approve" | "reject" | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const busy = pendingAction !== null;
 
   async function respond(action: "approve" | "reject") {
-    setBusy(true);
+    setPendingAction(action);
     setError(null);
     try {
       const res = await fetch(`/api/family/activity/${entryId}/${action}`, { method: "POST" });
@@ -31,7 +32,7 @@ export default function ApprovalRow({
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not update.");
-      setBusy(false);
+      setPendingAction(null);
     }
   }
 
@@ -50,14 +51,14 @@ export default function ApprovalRow({
             disabled={busy}
             className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-hover disabled:opacity-60"
           >
-            Approve
+            {pendingAction === "approve" ? "Approving…" : "Approve"}
           </button>
           <button
             onClick={() => respond("reject")}
             disabled={busy}
             className="rounded-lg border border-danger px-4 py-2 text-sm font-semibold text-danger hover:bg-danger/10 disabled:opacity-60"
           >
-            Reject
+            {pendingAction === "reject" ? "Rejecting…" : "Reject"}
           </button>
         </div>
       </div>
